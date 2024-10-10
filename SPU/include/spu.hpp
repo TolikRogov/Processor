@@ -2,13 +2,16 @@
 #define SPU_INCLUDE
 
 #include "STACK_LIBRARY.hpp"
+#include "spu_utilities.hpp"
+#include <sys/stat.h>
 
 struct SPU {
-	char* file_name;
+	const char* file;
 	size_t size;
 	int* code;
 };
 
-StackStatusCode SPURun();
+SPUStatusCode SPUCtor(SPU* proc);
+SPUStatusCode SPURun(SPU* proc);
 
 #endif // SPU_INCLUDE
