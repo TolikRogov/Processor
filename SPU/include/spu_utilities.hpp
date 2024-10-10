@@ -19,7 +19,12 @@ enum Commands {
 	ADD,
 	SUB,
 	DIV,
-	OUT
+	OUT,
+	MUL,
+	IN,
+	SQRT,
+	SIN,
+	COS
 };
 
 #define SPU_ERROR_DEMO(status) {														 							 \

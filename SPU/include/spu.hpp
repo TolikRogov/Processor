@@ -3,7 +3,7 @@
 
 #include "STACK_LIBRARY.hpp"
 #include "spu_utilities.hpp"
-#include <sys/stat.h>
+#include <math.h>
 
 struct SPU {
 	const char* file;

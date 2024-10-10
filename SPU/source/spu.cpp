@@ -38,7 +38,7 @@ SPUStatusCode SPURun(SPU* proc) {
 				STACK_POP(&stk, &x1);
 				STACK_POP(&stk, &x2);
 
-				STACK_PUSH(&stk, x1 - x2);
+				STACK_PUSH(&stk, x1 + x2);
 
 				break;
 			}
@@ -49,7 +49,7 @@ SPUStatusCode SPURun(SPU* proc) {
 				STACK_POP(&stk, &x1);
 				STACK_POP(&stk, &x2);
 
-				STACK_PUSH(&stk, x1 * x2);
+				STACK_PUSH(&stk, x2 - x1);
 
 				break;
 			}
@@ -60,7 +60,56 @@ SPUStatusCode SPURun(SPU* proc) {
 				STACK_POP(&stk, &x1);
 				STACK_POP(&stk, &x2);
 
-				STACK_PUSH(&stk, x1 / x2);
+				STACK_PUSH(&stk, x2 / x1);
+
+				break;
+			}
+			case MUL: {
+				Stack_elem_t x1 = 0;
+				Stack_elem_t x2 = 0;
+
+				STACK_POP(&stk, &x1);
+				STACK_POP(&stk, &x2);
+
+				STACK_PUSH(&stk, x2 * x1);
+
+				break;
+			}
+			case IN: {
+				Stack_elem_t x = 0;
+
+				scanf(YELLOW("Enter integer number: %lg"), &x);
+
+				STACK_PUSH(&stk, x);
+
+				break;
+			}
+			case SQRT: {
+				Stack_elem_t x = 0;
+
+				STACK_POP(&stk, &x);
+
+				x = sqrt(x);
+
+				STACK_PUSH(&stk, x);
+
+				break;
+			}
+			case SIN: {
+				Stack_elem_t x = 0;
+
+				x = sin(x);
+
+				STACK_PUSH(&stk, x);
+
+				break;
+			}
+			case COS: {
+				Stack_elem_t x = 0;
+
+				x = cos(x);
+
+				STACK_PUSH(&stk, x);
 
 				break;
 			}
