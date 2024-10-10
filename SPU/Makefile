@@ -23,4 +23,4 @@ $(BUILD_DIR)/%.o: $(SUBMODULE)/$(SOURCE)/%.cpp
 	@$(CC) $(CFLAGS) $< -o $@
 
 clean:
-	rm -rf $(BUILD_DIR)
+	@rm -rf $(BUILD_DIR)
