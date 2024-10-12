@@ -1,3 +1,6 @@
 [submodule "SPU/Stack"]
 	path = SPU/Stack
 	url = https://github.com/TolikRogov/Stack
+[submodule "Onegin"]
+	path = Onegin
+	url = https://github.com/TolikRogov/Onegin
