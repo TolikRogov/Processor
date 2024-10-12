@@ -1,13 +1,16 @@
 MAKE = make
 
 SPU_DIR = SPU
+ASM_DIR = ASSEMBLER
 BUILD_DIR = build
-PROC = proc
 
-all: VM
+all: ASM VM
 
 VM:
-	clear
-	@$(MAKE) -C $(SPU_DIR) clean
 	@$(MAKE) -C $(SPU_DIR)
-	@./$(SPU_DIR)/$(BUILD_DIR)/$(PROC)
+	@./$(SPU_DIR)/$(BUILD_DIR)/proc
+
+ASM:
+	clear
+	@$(MAKE) -C $(ASM_DIR)
+	@./$(ASM_DIR)/$(BUILD_DIR)/asm

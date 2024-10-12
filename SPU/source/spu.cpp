@@ -27,11 +27,11 @@ SPUStatusCode SPURun(SPU* proc) {
 	for (size_t i = 0; i < proc->size; i++) {
 
 		switch (*(proc->code + i)) {
-			case PUSH: {
+			case CMD_PUSH: {
 				STACK_PUSH(&stk, *(proc->code + (i++) + 1));
 				break;
 			}
-			case ADD: {
+			case CMD_ADD: {
 				Stack_elem_t x1 = 0;
 				Stack_elem_t x2 = 0;
 
@@ -42,7 +42,7 @@ SPUStatusCode SPURun(SPU* proc) {
 
 				break;
 			}
-			case SUB: {
+			case CMD_SUB: {
 				Stack_elem_t x1 = 0;
 				Stack_elem_t x2 = 0;
 
@@ -53,7 +53,7 @@ SPUStatusCode SPURun(SPU* proc) {
 
 				break;
 			}
-			case DIV: {
+			case CMD_DIV: {
 				Stack_elem_t x1 = 0;
 				Stack_elem_t x2 = 0;
 
@@ -64,7 +64,7 @@ SPUStatusCode SPURun(SPU* proc) {
 
 				break;
 			}
-			case MUL: {
+			case CMD_MUL: {
 				Stack_elem_t x1 = 0;
 				Stack_elem_t x2 = 0;
 
@@ -75,16 +75,17 @@ SPUStatusCode SPURun(SPU* proc) {
 
 				break;
 			}
-			case IN: {
+			case CMD_IN: {
 				Stack_elem_t x = 0;
 
-				scanf(YELLOW("Enter integer number: %lg"), &x);
+				printf(YELLOW("Enter your number:")" ");
+				scanf("%lg", &x);
 
 				STACK_PUSH(&stk, x);
 
 				break;
 			}
-			case SQRT: {
+			case CMD_SQRT: {
 				Stack_elem_t x = 0;
 
 				STACK_POP(&stk, &x);
@@ -95,7 +96,7 @@ SPUStatusCode SPURun(SPU* proc) {
 
 				break;
 			}
-			case SIN: {
+			case CMD_SIN: {
 				Stack_elem_t x = 0;
 
 				x = sin(x);
@@ -104,7 +105,7 @@ SPUStatusCode SPURun(SPU* proc) {
 
 				break;
 			}
-			case COS: {
+			case CMD_COS: {
 				Stack_elem_t x = 0;
 
 				x = cos(x);
@@ -113,16 +114,16 @@ SPUStatusCode SPURun(SPU* proc) {
 
 				break;
 			}
-			case OUT: {
+			case CMD_OUT: {
 				Stack_elem_t result = 0;
 
 				STACK_POP(&stk, &result);
 
-				printf("\n result = %lg \n", result);
+				printf("\nresult = %lg \n", result);
 
 				break;
 			}
-			case HLT:
+			case CMD_HLT:
 				break;
 			default:
 				SPU_ERROR_DEMO(SPU_COMMAND_ERROR);

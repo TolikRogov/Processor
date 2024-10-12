@@ -11,6 +11,8 @@ LDFLAGS = -fsanitize=address,alignment
 OBJECTS = $(BUILD_DIR)/main.o $(BUILD_DIR)/stack.o $(BUILD_DIR)/log.o $(BUILD_DIR)/utilities.o $(BUILD_DIR)/spu_utilities.o $(BUILD_DIR)/spu.o
 EXECUTABLE = $(BUILD_DIR)/proc
 
+default: clean $(EXECUTABLE)
+
 $(EXECUTABLE): $(OBJECTS)
 	@$(CC) $(LDFLAGS) $(OBJECTS) -o $@
 
