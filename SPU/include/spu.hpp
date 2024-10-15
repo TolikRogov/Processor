@@ -1,7 +1,7 @@
 #ifndef SPU_INCLUDE
 #define SPU_INCLUDE
 
-#include "STACK_LIBRARY.hpp"
+#include "../../Stack/include/STACK_LIBRARY.hpp"
 #include "spu_utilities.hpp"
 #include <math.h>
 

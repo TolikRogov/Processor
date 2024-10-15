@@ -23,8 +23,12 @@ enum AsmStatusCode {
 	ASM_NO_ERROR,
 
 	ASM_FILE_OPEN_ERROR,
-	ASM_FILE_CLOSE_ERROR
+	ASM_FILE_CLOSE_ERROR,
+	ASM_ERROR_AMOUNT_OF_ARGS,
 
+	ASM_COMMAND_READ_ERROR,
+
+	ASM_ALLOC_ERROR
 };
 
 const char* AsmErrorsMessenger(AsmStatusCode status);
