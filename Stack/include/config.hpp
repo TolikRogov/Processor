@@ -1,9 +1,0 @@
-#ifndef CONFIG_INCLUDE
-#define CONFIG_INCLUDE
-
-#define HTML_DUMP
-//#define CANARY_PROTECTION
-//#define HASH_PROTECTION
-//#define N_DEBUG
-
-#endif //CONFIG_INCLUDE
