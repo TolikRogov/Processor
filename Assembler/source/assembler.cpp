@@ -11,7 +11,7 @@ AsmStatusCode StorageAssembler(Storage* storage, Assembler* assembler) {
 		char command[MAX_COMMAND_LENGTH] = {};
 		int symbols_num = sscanf(storage->text[i].cur_str, "%s", command);
 		if (symbols_num == -1)
-			continue;
+			ASM_ERROR_DEMO(ASM_COMMAND_READ_ERROR);
 
 		if (StrCmp(command, "push") == 0) {
 			printf("command: 0x%x\n", CMD_PUSH);

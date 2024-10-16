@@ -7,10 +7,9 @@ BUILD_DIR = build
 all: ASM VM
 
 VM:
-	@$(MAKE) -C $(SPU_DIR)
-	@./$(SPU_DIR)/$(BUILD_DIR)/proc data/output.txt
+	@cd $(SPU_DIR); \
+	$(MAKE) run
 
 ASM:
-	clear
 	@cd $(ASM_DIR); \
 	$(MAKE) run

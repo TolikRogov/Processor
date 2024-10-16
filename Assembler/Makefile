@@ -13,7 +13,8 @@ OBJECTS = $(BUILD_DIR)/main.o $(BUILD_DIR)/assembler.o $(BUILD_DIR)/asm_utilitie
 EXECUTABLE = $(BUILD_DIR)/asm
 
 run: default
-	@read -p "Enter path to file that you want to assemble: " input; \
+	@find $(DATA) -type file -exec basename {} \;
+	@read -p "Enter name of file that you want to assemble: " input; \
 	read -p "Enter path to output assembler file: " output; \
 	./$(BUILD_DIR)/asm $(DATA)/$$input $(DATA)/$$output
 
