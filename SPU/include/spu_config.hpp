@@ -1,0 +1,6 @@
+#ifndef SPU_CONFIG_INCLUDE
+#define SPU_CONFIG_INCLUDE
+
+//#define SPU_DUMP
+
+#endif // SPU_CONFIG_INCLUDE

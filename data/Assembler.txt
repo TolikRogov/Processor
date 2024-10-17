@@ -1,4 +1,4 @@
-in
+push 0
 pop ax
 
 pushr ax
@@ -12,9 +12,8 @@ add
 pop ax
 
 pushr ax
-pushr ax
-mul
-out
+push 10
+jb 4
 
 hlt
 

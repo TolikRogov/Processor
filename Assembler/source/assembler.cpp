@@ -109,6 +109,13 @@ AsmStatusCode StorageAssembler(Storage* storage, Assembler* assembler) {
 			ASM_ERROR_DEMO(asm_status);
 			continue;
 		}
+		if (StrCmp(command, "jb") == 0) {
+			*(assembler->code + assembler->pc) = CMD_JB;
+			assembler->pc++;
+			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
+			ASM_ERROR_DEMO(asm_status);
+			continue;
+		}
 
 		ASM_ERROR_DEMO(ASM_SYNTAX_COMMAND_ERROR);
 
@@ -124,6 +131,10 @@ AsmStatusCode GetArgs(String* string, Assembler* assembler, int cmd_len) {
 	switch (*(assembler->code + assembler->pc - 1)) {
 
 		case CMD_PUSH: {
+			asm_status = GetNumber(string, assembler, cmd_len);
+			break;
+		}
+		case CMD_JB: {
 			asm_status = GetNumber(string, assembler, cmd_len);
 			break;
 		}
@@ -149,6 +160,7 @@ AsmStatusCode GetNumber(String* string, Assembler* assembler, int cmd_len) {
 
 	int num = 0;
 	int symbols_num = sscanf(string->cur_str + cmd_len, "%d", &num);
+	printf("string: %s\n", string->cur_str);
 	if (symbols_num < 1)
 		ASM_ERROR_DEMO(ASM_COMMAND_READ_ERROR);
 
@@ -198,7 +210,8 @@ AsmStatusCode CodePrinter(Assembler* assembler, const char* file_out) {
 
 		if (cmd == CMD_PUSH  ||
 			cmd == CMD_PUSHR ||
-			cmd == CMD_POP)
+			cmd == CMD_POP	 ||
+			cmd == CMD_JB)
 			fprintf(output, " 0x%.2x", *(assembler->code + i++ + 1));
 
 		fprintf(output, "\n");

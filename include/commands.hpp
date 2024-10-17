@@ -14,7 +14,8 @@ enum Commands {
 	CMD_IN,
 	CMD_SQRT,
 	CMD_SIN,
-	CMD_COS
+	CMD_COS,
+	CMD_JB
 };
 
 #endif

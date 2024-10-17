@@ -60,13 +60,17 @@ SPUStatusCode SPURun(SPU* proc) {
 
 	for (size_t pc = 0; pc < proc->size; pc++) {
 
+#ifdef SPU_DUMP
+		SPUDump(proc, pc);
+#endif
+
 		switch (*(proc->code + pc)) {
 			case CMD_PUSH: {
 				STACK_PUSH(&stk, *(proc->code + (pc++) + 1));
 				break;
 			}
 			case CMD_PUSHR: {
-				STACK_PUSH(&stk, proc->registers[*(proc->code + (pc++) + 1)]);
+				STACK_PUSH(&stk, proc->registers[*(proc->code + (pc++) + 1) - 1]);
 				break;
 			}
 			case CMD_POP: {
@@ -74,7 +78,7 @@ SPUStatusCode SPURun(SPU* proc) {
 
 				STACK_POP(&stk, &x);
 
-				proc->registers[*(proc->code + (pc++) + 1)] = (int)x;
+				proc->registers[*(proc->code + (pc++) + 1) - 1] = (int)x;
 
 				break;
 			}
@@ -170,9 +174,21 @@ SPUStatusCode SPURun(SPU* proc) {
 
 				STACK_POP(&stk, &result);
 
-				printf("\n" GREEN("result = %lg") "\n\n", result);
+				printf(GREEN("result = %d")"\n", (int)result);
 
 				break;
+			}
+			case CMD_JB: {
+				Stack_elem_t x1 = 0;
+				Stack_elem_t x2 = 0;
+
+				STACK_POP(&stk, &x1);
+				STACK_POP(&stk, &x2);
+
+				if (x2 < x1)
+					pc = (size_t)*(proc->code + pc + 1) - 1;
+				else
+					pc++;
 			}
 			case CMD_HLT:
 				break;
@@ -183,6 +199,39 @@ SPUStatusCode SPURun(SPU* proc) {
 	}
 
 	DoStackDtor(&stk);
+
+	return SPU_NO_ERROR;
+}
+
+SPUStatusCode SPUDump(SPU* proc, size_t pc) {
+
+	for (size_t i = 0; i < 3 * proc->size; i++)
+		printf("-");
+	printf("\n");
+
+	for (size_t i = 0; i < proc->size; i++)
+		printf("%.2zu ", i);
+	printf("\n");
+
+	for (size_t i = 0; i < proc->size; i++)
+		printf("%.2d ", *(proc->code + i));
+	printf("\n");
+
+	for (size_t i = 0; i < pc; i++)
+		printf("   ");
+	printf("^\n");
+
+	printf("pc = %zu\n", pc);
+
+	printf("Registers: ");
+	for (size_t i = 0; i < MAX_REG_AMOUNT; i++)
+		printf("%cX = %d ", 'A' + (int)i, proc->registers[i]);
+	printf("\n");
+
+	for (size_t i = 0; i < 3 * proc->size; i++)
+		printf("-");
+
+	getchar();
 
 	return SPU_NO_ERROR;
 }

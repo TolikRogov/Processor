@@ -1,6 +1,8 @@
 #ifndef SPU_UTILITIES_INCLUDE
 #define SPU_UTILITIES_INCLUDE
 
+#include "spu_config.hpp"
+#include <stdio.h>
 #include "../../include/errors.hpp"
 #include "../../include/commands.hpp"
 #include "../../include/CodeProtect.hpp"
