@@ -99,6 +99,8 @@ SPUStatusCode SPURun(SPU* proc) {
 			case CMD_SIN: {
 				Stack_elem_t x = 0;
 
+				STACK_POP(&stk, &x);
+
 				x = sin(x);
 
 				STACK_PUSH(&stk, x);
@@ -107,6 +109,8 @@ SPUStatusCode SPURun(SPU* proc) {
 			}
 			case CMD_COS: {
 				Stack_elem_t x = 0;
+
+				STACK_POP(&stk, &x);
 
 				x = cos(x);
 

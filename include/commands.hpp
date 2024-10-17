@@ -4,6 +4,8 @@
 enum Commands {
 	CMD_HLT,
 	CMD_PUSH,
+	CMD_PUSHR,
+	CMD_POP,
 	CMD_ADD,
 	CMD_SUB,
 	CMD_DIV,

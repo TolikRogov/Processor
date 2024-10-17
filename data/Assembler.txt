@@ -1,5 +1,11 @@
-push 1
-push 2
-add
-out
-hlt
+PUSH 1
+PUSH 2
+
+PUSHR AX
+PUSHR DX
+
+POP AX
+
+ADD
+OUT
+HLT
