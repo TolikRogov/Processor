@@ -3,6 +3,7 @@
 
 #include "../../include/errors.hpp"
 #include "../../include/commands.hpp"
+#include "../../include/CodeProtect.hpp"
 
 #define SPU_ERROR_DEMO(status) {														 							 \
 	if (status != SPU_NO_ERROR)	{																					\

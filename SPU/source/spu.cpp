@@ -1,12 +1,15 @@
 #include "spu.hpp"
 
-SPUStatusCode SPUCtor(SPU* proc) {
+SPUStatusCode SPUCtor(SPU* proc, const char* file) {
 
-	FILE* input = fopen(proc->file, "r");
+	FILE* input = fopen(file, "r");
 	if (!input)
 		SPU_ERROR_DEMO(SPU_FILE_OPEN_ERROR);
 
-	fscanf(input, "%zd", &proc->size);
+	char sign[MAX_SIGNATURE_LENGTH] = {};
+	fscanf(input, "%s", sign);
+	if (StrCmp(sign, SIGNATURE) != 0)
+		SPU_ERROR_DEMO(SPU_SIGNATURE_ERROR);
 
 	proc->code = (int*)calloc(proc->size, sizeof(int));
 	if (!proc->code)
@@ -14,6 +17,9 @@ SPUStatusCode SPUCtor(SPU* proc) {
 
 	for (size_t i = 0; i < proc->size; i++)
 		fscanf(input, "%d", (proc->code + i));
+
+	if (fclose(input))
+		SPU_ERROR_DEMO(SPU_FILE_CLOSE_ERROR);
 
 	return SPU_NO_ERROR;
 }

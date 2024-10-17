@@ -12,5 +12,7 @@ const char* SPUErrorsMessenger(SPUStatusCode status) {
 		case SPU_ALLOC_ERROR:			return "SPU ERROR - MEMORY ALLOCATION ERROR";
 
 		case SPU_COMMAND_ERROR:			return "SPU ERROR - UNKNOWN COMMAND FOR PROCESSOR";
+
+		case SPU_SIGNATURE_ERROR:		return "SPU ERROR - SIGNATURE IS UNACCEPTABLE";
 	}
 }
