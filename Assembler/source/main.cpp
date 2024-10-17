@@ -17,9 +17,8 @@ int main(int argc, const char* argv[]) {
 	asm_status = StorageAssembler(&storage, &assembler);
 	ASM_ERROR_DEMO(asm_status);
 
-	// FILE* output = fopen(argv[2], "w");
-	// if (!output)
-	// 	ASM_ERROR_DEMO(ASM_FILE_OPEN_ERROR);
+	asm_status = CodePrinter(&assembler, argv[2]);
+	ASM_ERROR_DEMO(asm_status);
 
 	return 0;
 }
