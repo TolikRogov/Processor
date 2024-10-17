@@ -15,6 +15,11 @@ const size_t REGISTER_NAME_LENGTH = 5;
 const size_t MAX_COMMAND_LENGTH = 6;
 
 AsmStatusCode StorageAssembler(Storage* storage, Assembler* assembler);
+
+AsmStatusCode GetArgs(String* string, Assembler* assembler, int cmd_len);
+AsmStatusCode GetNumber(String* string, Assembler* assembler, int cmd_len);
+AsmStatusCode GetRegister(String* string, Assembler* assembler, int cmd_len);
+
 AsmStatusCode CodePrinter(Assembler* assembler, const char* file_out);
 
 #endif // ASSEMBLER_INCLUDE

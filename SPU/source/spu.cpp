@@ -2,24 +2,52 @@
 
 SPUStatusCode SPUCtor(SPU* proc, const char* file) {
 
+	SPUStatusCode spu_status = SPU_NO_ERROR;
+
 	FILE* input = fopen(file, "r");
 	if (!input)
 		SPU_ERROR_DEMO(SPU_FILE_OPEN_ERROR);
 
+	spu_status = CodeHeaderChecker(proc, input);
+	SPU_ERROR_DEMO(spu_status);
+
+	for (size_t i = 0; i < proc->size; i++) {
+		int check = fscanf(input, "%x", (proc->code + i));
+		if (check < 1)
+			SPU_ERROR_DEMO(SPU_FILE_READ_ERROR);
+	}
+
+	if (fclose(input))
+		SPU_ERROR_DEMO(SPU_FILE_CLOSE_ERROR);
+
+	return SPU_NO_ERROR;
+}
+
+SPUStatusCode CodeHeaderChecker(SPU* proc, FILE* file) {
+
 	char sign[MAX_SIGNATURE_LENGTH] = {};
-	fscanf(input, "%s", sign);
+	int check = fscanf(file, "%s", sign);
+	if (check < 1)
+		SPU_ERROR_DEMO(SPU_FILE_READ_ERROR);
+
 	if (StrCmp(sign, SIGNATURE) != 0)
 		SPU_ERROR_DEMO(SPU_SIGNATURE_ERROR);
+
+	size_t code_version = 0;
+	check = fscanf(file, "%zu", &code_version);
+	if (check < 1)
+		SPU_ERROR_DEMO(SPU_FILE_READ_ERROR);
+
+	if (code_version != CODE_VERSION)
+		SPU_ERROR_DEMO(SPU_CODE_VERSION_ERROR);
+
+	check = fscanf(file, "%zu", &proc->size);
+	if (check < 1)
+		SPU_ERROR_DEMO(SPU_FILE_READ_ERROR);
 
 	proc->code = (int*)calloc(proc->size, sizeof(int));
 	if (!proc->code)
 		SPU_ERROR_DEMO(SPU_ALLOC_ERROR);
-
-	for (size_t i = 0; i < proc->size; i++)
-		fscanf(input, "%d", (proc->code + i));
-
-	if (fclose(input))
-		SPU_ERROR_DEMO(SPU_FILE_CLOSE_ERROR);
 
 	return SPU_NO_ERROR;
 }
@@ -30,11 +58,24 @@ SPUStatusCode SPURun(SPU* proc) {
 
 	STACK_CTOR(&stk, 1);
 
-	for (size_t i = 0; i < proc->size; i++) {
+	for (size_t pc = 0; pc < proc->size; pc++) {
 
-		switch (*(proc->code + i)) {
+		switch (*(proc->code + pc)) {
 			case CMD_PUSH: {
-				STACK_PUSH(&stk, *(proc->code + (i++) + 1));
+				STACK_PUSH(&stk, *(proc->code + (pc++) + 1));
+				break;
+			}
+			case CMD_PUSHR: {
+				STACK_PUSH(&stk, proc->registers[*(proc->code + (pc++) + 1)]);
+				break;
+			}
+			case CMD_POP: {
+				Stack_elem_t x = 0;
+
+				STACK_POP(&stk, &x);
+
+				proc->registers[*(proc->code + (pc++) + 1)] = (int)x;
+
 				break;
 			}
 			case CMD_ADD: {
@@ -129,7 +170,7 @@ SPUStatusCode SPURun(SPU* proc) {
 
 				STACK_POP(&stk, &result);
 
-				printf("\nresult = %lg \n", result);
+				printf("\n" GREEN("result = %lg") "\n\n", result);
 
 				break;
 			}

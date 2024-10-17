@@ -14,6 +14,8 @@
 	}																												\
 }
 
+const size_t MAX_REG_AMOUNT = 8;
+
 const char* SPUErrorsMessenger(SPUStatusCode status);
 
 #endif // SPU_UTILITIES_INCLUDE

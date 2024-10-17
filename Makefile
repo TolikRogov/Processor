@@ -2,14 +2,16 @@ MAKE = make
 
 SPU_DIR = SPU
 ASM_DIR = Assembler
-BUILD_DIR = build
 
-all: ASM VM
+PROJECTS = $(ASM_DIR) $(SPU_DIR)
 
-VM:
-	@cd $(SPU_DIR); \
-	$(MAKE) run
+default:
+	@for dir in $(PROJECTS); do \
+		cd $$dir; $(MAKE); cd ../; \
+	done
 
-ASM:
-	@cd $(ASM_DIR); \
-	$(MAKE) run
+run:
+	clear
+	@for dir in $(PROJECTS); do \
+		cd $$dir; $(MAKE) run; cd ../; \
+	done

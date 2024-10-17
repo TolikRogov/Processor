@@ -1,11 +1,20 @@
-PUSH 1
-PUSH 2
+in
+pop ax
 
-PUSHR AX
-PUSHR DX
+pushr ax
+pushr ax
+mul
+out
 
-POP AX
+pushr ax
+push 1
+add
+pop ax
 
-ADD
-OUT
-HLT
+pushr ax
+pushr ax
+mul
+out
+
+hlt
+

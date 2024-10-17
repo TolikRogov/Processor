@@ -21,116 +21,162 @@ AsmStatusCode StorageAssembler(Storage* storage, Assembler* assembler) {
 		if (StrCmp(command, "push") == 0) {
 			*(assembler->code + assembler->pc) = CMD_PUSH;
 			assembler->pc++;
-
-			int num = 0;
-			symbols_num = sscanf(storage->text[i].cur_str + cur_cmd_len, "%d", &num);
-			if (symbols_num < 1)
-				ASM_ERROR_DEMO(ASM_COMMAND_READ_ERROR);
-
-			*(assembler->code + assembler->pc) = num;
-			assembler->pc++;
-
+			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
+			ASM_ERROR_DEMO(asm_status);
 			continue;
 		}
 		if (StrCmp(command, "pushr") == 0) {
-
-			if (storage->text[i].cur_str_size > MAX_COMMAND_LENGTH + REGISTER_NAME_LENGTH)
-				ASM_ERROR_DEMO(ASM_BIG_NAME_FOR_REGISTER);
-
 			*(assembler->code + assembler->pc) = CMD_PUSHR;
 			assembler->pc++;
-
-			char reg[REGISTER_NAME_LENGTH] = {};
-			symbols_num = sscanf(storage->text[i].cur_str + cur_cmd_len, "%s", reg);
-			if (symbols_num < 1)
-				ASM_ERROR_DEMO(ASM_COMMAND_READ_ERROR);
-
-			StringToLower(reg);
-
-			asm_status = FindXinRegister(reg);
+			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
 			ASM_ERROR_DEMO(asm_status);
-
-			*(assembler->code + assembler->pc) = *reg - 'a' + 1;
-			assembler->pc++;
-
 			continue;
 		}
 		if (StrCmp(command, "pop") == 0) {
-			if (storage->text[i].cur_str_size > MAX_COMMAND_LENGTH + REGISTER_NAME_LENGTH)
-				ASM_ERROR_DEMO(ASM_BIG_NAME_FOR_REGISTER);
-
 			*(assembler->code + assembler->pc) = CMD_POP;
 			assembler->pc++;
-
-			char reg[REGISTER_NAME_LENGTH] = {};
-			symbols_num = sscanf(storage->text[i].cur_str + cur_cmd_len, "%s", reg);
-			if (symbols_num < 1)
-				ASM_ERROR_DEMO(ASM_COMMAND_READ_ERROR);
-
-			StringToLower(reg);
-
-			asm_status = FindXinRegister(reg);
+			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
 			ASM_ERROR_DEMO(asm_status);
-
-			*(assembler->code + assembler->pc) = *reg - 'a' + 1;
-			assembler->pc++;
-
 			continue;
 		}
 		if (StrCmp(command, "hlt") == 0) {
 			*(assembler->code + assembler->pc) = CMD_HLT;
 			assembler->pc++;
+			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
+			ASM_ERROR_DEMO(asm_status);
 			continue;
 		}
 		if (StrCmp(command, "add") == 0) {
 			*(assembler->code + assembler->pc) = CMD_ADD;
 			assembler->pc++;
+			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
+			ASM_ERROR_DEMO(asm_status);
 			continue;
 		}
 		if (StrCmp(command, "sub") == 0) {
 			*(assembler->code + assembler->pc) = CMD_SUB;
 			assembler->pc++;
+			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
+			ASM_ERROR_DEMO(asm_status);
 			continue;
 		}
 		if (StrCmp(command, "div") == 0) {
 			*(assembler->code + assembler->pc) = CMD_DIV;
 			assembler->pc++;
+			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
+			ASM_ERROR_DEMO(asm_status);
 			continue;
 		}
 		if (StrCmp(command, "out") == 0) {
 			*(assembler->code + assembler->pc) = CMD_OUT;
 			assembler->pc++;
+			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
+			ASM_ERROR_DEMO(asm_status);
 			continue;
 		}
 		if (StrCmp(command, "mul") == 0) {
 			*(assembler->code + assembler->pc) = CMD_MUL;
 			assembler->pc++;
+			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
+			ASM_ERROR_DEMO(asm_status);
 			continue;
 		}
 		if (StrCmp(command, "in") == 0) {
 			*(assembler->code + assembler->pc) = CMD_IN;
 			assembler->pc++;
+			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
+			ASM_ERROR_DEMO(asm_status);
 			continue;
 		}
 		if (StrCmp(command, "sqrt") == 0) {
 			*(assembler->code + assembler->pc) = CMD_SQRT;
 			assembler->pc++;
+			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
+			ASM_ERROR_DEMO(asm_status);
 			continue;
 		}
 		if (StrCmp(command, "sin") == 0) {
 			*(assembler->code + assembler->pc) = CMD_SIN;
 			assembler->pc++;
+			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
+			ASM_ERROR_DEMO(asm_status);
 			continue;
 		}
 		if (StrCmp(command, "cos") == 0) {
 			*(assembler->code + assembler->pc) = CMD_COS;
 			assembler->pc++;
+			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
+			ASM_ERROR_DEMO(asm_status);
 			continue;
 		}
 
 		ASM_ERROR_DEMO(ASM_SYNTAX_COMMAND_ERROR);
 
 	}
+
+	return ASM_NO_ERROR;
+}
+
+AsmStatusCode GetArgs(String* string, Assembler* assembler, int cmd_len) {
+
+	AsmStatusCode asm_status = ASM_NO_ERROR;
+
+	switch (*(assembler->code + assembler->pc - 1)) {
+
+		case CMD_PUSH: {
+			asm_status = GetNumber(string, assembler, cmd_len);
+			break;
+		}
+		case CMD_PUSHR: {
+			asm_status = GetRegister(string, assembler, cmd_len);
+			break;
+		}
+		case CMD_POP: {
+			asm_status = GetRegister(string, assembler, cmd_len);
+			break;
+		}
+		default:
+			break;
+
+	}
+
+	ASM_ERROR_DEMO(asm_status);
+
+	return ASM_NO_ERROR;
+}
+
+AsmStatusCode GetNumber(String* string, Assembler* assembler, int cmd_len) {
+
+	int num = 0;
+	int symbols_num = sscanf(string->cur_str + cmd_len, "%d", &num);
+	if (symbols_num < 1)
+		ASM_ERROR_DEMO(ASM_COMMAND_READ_ERROR);
+
+	*(assembler->code + assembler->pc) = num;
+	assembler->pc++;
+
+	return ASM_NO_ERROR;
+}
+
+AsmStatusCode GetRegister(String* string, Assembler* assembler, int cmd_len) {
+
+	AsmStatusCode asm_status = ASM_NO_ERROR;
+
+	if (string->cur_str_size > MAX_COMMAND_LENGTH + REGISTER_NAME_LENGTH)
+		ASM_ERROR_DEMO(ASM_BIG_NAME_FOR_REGISTER);
+
+	char reg[REGISTER_NAME_LENGTH] = {};
+	int symbols_num = sscanf(string->cur_str + cmd_len, "%s", reg);
+	if (symbols_num < 1)
+		ASM_ERROR_DEMO(ASM_COMMAND_READ_ERROR);
+
+	StringToLower(reg);
+
+	asm_status = FindXinRegister(reg);
+	ASM_ERROR_DEMO(asm_status);
+
+	*(assembler->code + assembler->pc) = *reg - 'a' + 1;
+	assembler->pc++;
 
 	return ASM_NO_ERROR;
 }
