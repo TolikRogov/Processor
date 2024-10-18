@@ -5,7 +5,18 @@
 #include "../../Onegin/include/Onegin.hpp"
 #include "../../Onegin/include/Sorting.hpp"
 
+const size_t MAX_SIGNATURE_LENGTH 			 = 20;
+const size_t CODE_VERSION 					 = 2;
+const char 	 SIGNATURE[MAX_SIGNATURE_LENGTH] = "TGF";
+
+struct McHeader {
+	const char* signature = SIGNATURE;
+	size_t code_version   = CODE_VERSION;
+};
+
 struct Assembler {
+	McHeader header;
+
 	int* code;
 	size_t code_size;
 	size_t pc;

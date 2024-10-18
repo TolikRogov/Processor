@@ -158,7 +158,7 @@ AsmStatusCode GetRegister(String* string, Assembler* assembler, int cmd_len) {
 	if (string->cur_str_size > MAX_COMMAND_LENGTH + REGISTER_NAME_LENGTH)
 		ASM_ERROR_DEMO(ASM_BIG_NAME_FOR_REGISTER);
 
-	char reg[REGISTER_NAME_LENGTH] = {};
+	char reg[REGISTER_NAME_LENGTH + 1] = {};
 	int symbols_num = sscanf(string->cur_str + cmd_len, "%s", reg);
 	if (symbols_num < 1)
 		ASM_ERROR_DEMO(ASM_COMMAND_READ_ERROR);
@@ -170,6 +170,9 @@ AsmStatusCode GetRegister(String* string, Assembler* assembler, int cmd_len) {
 
 	*(assembler->code + assembler->pc) |= (1 << BIT_FOR_REGISTER);
 	assembler->pc++;
+
+	if ((size_t)(*reg - 'a' + 1) > MAX_REG_AMOUNT)
+		ASM_ERROR_DEMO(ASM_WRONG_LETTER_IN_REG_NAME);
 
 	*(assembler->code + assembler->pc) = *reg - 'a' + 1;
 	assembler->pc++;
@@ -183,8 +186,8 @@ AsmStatusCode CodePrinter(Assembler* assembler, const char* file_out) {
 	if (!output)
 		ASM_ERROR_DEMO(ASM_FILE_OPEN_ERROR);
 
-	fprintf(output, "%s\n", SIGNATURE);
-	fprintf(output, "%zu\n", CODE_VERSION);
+	fprintf(output, "%s\n", assembler->header.signature);
+	fprintf(output, "%zu\n", assembler->header.code_version);
 	fprintf(output, "%zu\n", assembler->pc);
 
 	for (size_t i = 0; i < assembler->pc; i++) {
