@@ -28,6 +28,9 @@ run: default
 	@echo; read -p "Enter name of file with machine code: " input; echo; \
 	./$(BUILD_DIR)/proc $(DATA)/$$input
 
+all: default
+	./$(BUILD_DIR)/proc $(DATA)/$$output
+
 $(EXECUTABLE): $(OBJECTS)
 	@$(CC) $(LDFLAGS) $(OBJECTS) -o $@
 

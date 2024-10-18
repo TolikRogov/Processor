@@ -4,14 +4,15 @@ SPU_DIR = SPU
 ASM_DIR = Assembler
 
 PROJECTS = $(ASM_DIR) $(SPU_DIR)
+PUSK = run all
 
 default:
 	@for dir in $(PROJECTS); do \
 		cd $$dir; $(MAKE); cd ../; \
 	done
 
-run:
+$(PUSK):
 	clear
 	@for dir in $(PROJECTS); do \
-		cd $$dir; $(MAKE) run; cd ../; \
+		cd $$dir; $(MAKE) $@; cd ../; \
 	done

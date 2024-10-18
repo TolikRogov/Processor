@@ -2,7 +2,7 @@
 #define SPU_UTILITIES_INCLUDE
 
 #include <stdio.h>
-#include "../../include/errors.hpp"
+#include "../../include/errors.hpp" // try with -I ../../include
 #include "../../include/commands.hpp"
 #include "../../include/constants.hpp"
 

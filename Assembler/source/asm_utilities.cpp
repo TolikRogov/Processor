@@ -11,9 +11,12 @@ const char* AsmErrorsMessenger(AsmStatusCode status) {
 		case ASM_COMMAND_READ_ERROR:		return "ASM ERROR - COMMAND WAS NOT READ";
 		case ASM_SYNTAX_COMMAND_ERROR:		return "ASM ERROR - ERROR SYNTAX OF COMMAND";
 
-		case ASM_MISS_X_IN_REGISTER:		return "ASM ERROR - MISSING LETTER 'X' IN REGISTER";
+		case ASM_NO_CHAR_IN_STRING:			return "ASM ERROR - THERE IS NO THE CHAR IN STRING";
 		case ASM_BIG_NAME_FOR_REGISTER:		return "ASM ERROR - NAME OF YOUR REGISTER SO BIG";
 		case ASM_WRONG_LETTER_IN_REG_NAME:	return "ASM ERROR - REGISTERS MUST BE NAMED BY ALPHABET ORDER";
+
+		case ASM_BIG_NAME_FOR_LABEL:		return "ASM ERROR - LABEL NAME MUST BE LESS";
+		case ASM_UNDEFINE_LABEL:			return "ASM ERROR - LABEL IS UNDEFINED";
 
 		case ASM_ALLOC_ERROR:				return "ASM ERROR - MEMORY ALLOCATION ERROR";
 	}
@@ -28,12 +31,12 @@ AsmStatusCode StringToLower(char* string) {
 	return ASM_NO_ERROR;
 }
 
-AsmStatusCode FindXinRegister(const char* reg) {
+AsmStatusCode FindCharInString(const char* reg, const char x) {
 
 	for (size_t i = 0; *(reg + i) != '\0'; i++) {
-		if (*(reg + i) == 'x')
+		if (*(reg + i) == x)
 			return ASM_NO_ERROR;
 	}
 
-	return ASM_MISS_X_IN_REGISTER;
+	return ASM_NO_CHAR_IN_STRING;
 }

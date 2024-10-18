@@ -52,6 +52,7 @@ SPUStatusCode CodeHeaderChecker(SPU* proc, FILE* file) {
 	return SPU_NO_ERROR;
 }
 
+// TODO: double* GetArg();
 SPUStatusCode SPURun(SPU* proc) {
 
 	INIT_STACK(stk);
@@ -64,7 +65,7 @@ SPUStatusCode SPURun(SPU* proc) {
 		SPUDump(proc, pc);
 #endif
 
-		switch (*(proc->code + pc) & 0x1F) {
+		switch (*(proc->code + pc) & 0x1F) { // TODO: const 0xiF
 			case CMD_PUSH: {
 				if ((*(proc->code + pc) & (1 << BIT_FOR_NUMBER)) >> BIT_FOR_NUMBER) {
 					STACK_PUSH(&stk, *(proc->code + (pc++) + 1));
@@ -72,7 +73,7 @@ SPUStatusCode SPURun(SPU* proc) {
 				}
 
 				if ((*(proc->code + pc) & (1 << BIT_FOR_REGISTER)) >> BIT_FOR_REGISTER) {
-					STACK_PUSH(&stk, proc->registers[*(proc->code + (pc++) + 1) - 1]);
+					STACK_PUSH(&stk, proc->registers[*(proc->code + (pc++) + 1)]);
 					break;
 				}
 			}
@@ -81,7 +82,7 @@ SPUStatusCode SPURun(SPU* proc) {
 					Stack_elem_t x = 0;
 					STACK_POP(&stk, &x);
 
-					proc->registers[*(proc->code + (pc++) + 1) - 1] = (int)x;
+					proc->registers[*(proc->code + (pc++) + 1)] = (int)x;
 					break;
 				}
 			}
@@ -195,6 +196,11 @@ SPUStatusCode SPURun(SPU* proc) {
 						pc++;
 				}
 			}
+			case CMD_JMP: {
+				if ((*(proc->code + pc) & (1 << BIT_FOR_NUMBER)) >> BIT_FOR_NUMBER) {
+					pc = (size_t)*(proc->code + pc++ + 1) - 1;
+				}
+			}
 			case CMD_HLT:
 				break;
 			default:
@@ -229,12 +235,14 @@ SPUStatusCode SPUDump(SPU* proc, size_t pc) {
 	printf("pc = %zu\n", pc);
 
 	printf("Registers: ");
-	for (size_t i = 0; i < MAX_REG_AMOUNT; i++)
-		printf("%cX = %d ", 'A' + (int)i, proc->registers[i]);
+	printf("%cX = %d ", 'X', proc->registers[0]);
+	for (size_t i = 1; i < MAX_REG_AMOUNT; i++)
+		printf("%cX = %d ", 'A' + (int)i - 1, proc->registers[i]);
 	printf("\n");
 
 	for (size_t i = 0; i < 3 * proc->size; i++)
 		printf("-");
+	printf("\n");
 
 	getchar();
 
