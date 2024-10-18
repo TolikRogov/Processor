@@ -219,7 +219,7 @@ SPUStatusCode SPUDump(SPU* proc, size_t pc) {
 
 	for (size_t i = 0; i < pc; i++)
 		printf("   ");
-	printf("^\n");
+	printf(YELLOW("^")"\n");
 
 	printf("pc = %zu\n", pc);
 

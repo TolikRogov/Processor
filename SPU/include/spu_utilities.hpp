@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include "../../include/errors.hpp"
 #include "../../include/commands.hpp"
-#include "../../include/CodeProtect.hpp"
+#include "../../include/constants.hpp"
 
 #define SPU_ERROR_DEMO(status) {														 							 \
 	if (status != SPU_NO_ERROR)	{																					\
@@ -15,8 +15,6 @@
 		return status;																								\
 	}																												\
 }
-
-const size_t MAX_REG_AMOUNT = 8;
 
 const char* SPUErrorsMessenger(SPUStatusCode status);
 

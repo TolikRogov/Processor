@@ -19,99 +19,79 @@ AsmStatusCode StorageAssembler(Storage* storage, Assembler* assembler) {
 		StringToLower(command);
 
 		if (StrCmp(command, "push") == 0) {
-			*(assembler->code + assembler->pc) = CMD_PUSH;
-			assembler->pc++;
-			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
-			ASM_ERROR_DEMO(asm_status);
-			continue;
-		}
-		if (StrCmp(command, "pushr") == 0) {
-			*(assembler->code + assembler->pc) = CMD_PUSHR;
-			assembler->pc++;
+			*(assembler->code + assembler->pc) |= CMD_PUSH;
 			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
 			ASM_ERROR_DEMO(asm_status);
 			continue;
 		}
 		if (StrCmp(command, "pop") == 0) {
-			*(assembler->code + assembler->pc) = CMD_POP;
-			assembler->pc++;
+			*(assembler->code + assembler->pc) |= CMD_POP;
 			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
 			ASM_ERROR_DEMO(asm_status);
 			continue;
 		}
 		if (StrCmp(command, "hlt") == 0) {
-			*(assembler->code + assembler->pc) = CMD_HLT;
-			assembler->pc++;
+			*(assembler->code + assembler->pc) |= CMD_HLT;
 			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
 			ASM_ERROR_DEMO(asm_status);
 			continue;
 		}
 		if (StrCmp(command, "add") == 0) {
-			*(assembler->code + assembler->pc) = CMD_ADD;
-			assembler->pc++;
+			*(assembler->code + assembler->pc) |= CMD_ADD;
 			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
 			ASM_ERROR_DEMO(asm_status);
 			continue;
 		}
 		if (StrCmp(command, "sub") == 0) {
-			*(assembler->code + assembler->pc) = CMD_SUB;
-			assembler->pc++;
+			*(assembler->code + assembler->pc) |= CMD_SUB;
 			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
 			ASM_ERROR_DEMO(asm_status);
 			continue;
 		}
 		if (StrCmp(command, "div") == 0) {
-			*(assembler->code + assembler->pc) = CMD_DIV;
-			assembler->pc++;
+			*(assembler->code + assembler->pc) |= CMD_DIV;
 			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
 			ASM_ERROR_DEMO(asm_status);
 			continue;
 		}
 		if (StrCmp(command, "out") == 0) {
-			*(assembler->code + assembler->pc) = CMD_OUT;
-			assembler->pc++;
+			*(assembler->code + assembler->pc) |= CMD_OUT;
 			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
 			ASM_ERROR_DEMO(asm_status);
 			continue;
 		}
 		if (StrCmp(command, "mul") == 0) {
-			*(assembler->code + assembler->pc) = CMD_MUL;
-			assembler->pc++;
+			*(assembler->code + assembler->pc) |= CMD_MUL;
 			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
 			ASM_ERROR_DEMO(asm_status);
 			continue;
 		}
 		if (StrCmp(command, "in") == 0) {
-			*(assembler->code + assembler->pc) = CMD_IN;
-			assembler->pc++;
+			*(assembler->code + assembler->pc) |= CMD_IN;
 			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
 			ASM_ERROR_DEMO(asm_status);
 			continue;
 		}
 		if (StrCmp(command, "sqrt") == 0) {
-			*(assembler->code + assembler->pc) = CMD_SQRT;
-			assembler->pc++;
+			*(assembler->code + assembler->pc) |= CMD_SQRT;
 			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
 			ASM_ERROR_DEMO(asm_status);
 			continue;
 		}
 		if (StrCmp(command, "sin") == 0) {
-			*(assembler->code + assembler->pc) = CMD_SIN;
-			assembler->pc++;
+			*(assembler->code + assembler->pc) |= CMD_SIN;
 			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
 			ASM_ERROR_DEMO(asm_status);
 			continue;
 		}
 		if (StrCmp(command, "cos") == 0) {
-			*(assembler->code + assembler->pc) = CMD_COS;
-			assembler->pc++;
+			*(assembler->code + assembler->pc) |= CMD_COS;
 			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
 			ASM_ERROR_DEMO(asm_status);
 			continue;
 		}
 		if (StrCmp(command, "jb") == 0) {
-			*(assembler->code + assembler->pc) = CMD_JB;
-			assembler->pc++;
+			*(assembler->code + assembler->pc) |= CMD_JB;
 			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
 			ASM_ERROR_DEMO(asm_status);
 			continue;
@@ -128,26 +108,25 @@ AsmStatusCode GetArgs(String* string, Assembler* assembler, int cmd_len) {
 
 	AsmStatusCode asm_status = ASM_NO_ERROR;
 
-	switch (*(assembler->code + assembler->pc - 1)) {
+	switch (*(assembler->code + assembler->pc)) {
 
 		case CMD_PUSH: {
-			asm_status = GetNumber(string, assembler, cmd_len);
+			if (!asm_status)  asm_status = GetNumber(string, assembler, cmd_len);
+			if (asm_status)   asm_status = GetRegister(string, assembler, cmd_len);
 			break;
 		}
 		case CMD_JB: {
 			asm_status = GetNumber(string, assembler, cmd_len);
 			break;
 		}
-		case CMD_PUSHR: {
-			asm_status = GetRegister(string, assembler, cmd_len);
-			break;
-		}
 		case CMD_POP: {
 			asm_status = GetRegister(string, assembler, cmd_len);
 			break;
 		}
-		default:
+		default: {
+			assembler->pc++;
 			break;
+		}
 
 	}
 
@@ -160,9 +139,11 @@ AsmStatusCode GetNumber(String* string, Assembler* assembler, int cmd_len) {
 
 	int num = 0;
 	int symbols_num = sscanf(string->cur_str + cmd_len, "%d", &num);
-	printf("string: %s\n", string->cur_str);
 	if (symbols_num < 1)
-		ASM_ERROR_DEMO(ASM_COMMAND_READ_ERROR);
+		return ASM_COMMAND_READ_ERROR;
+
+	*(assembler->code + assembler->pc) |= (1 << BIT_FOR_NUMBER);
+	assembler->pc++;
 
 	*(assembler->code + assembler->pc) = num;
 	assembler->pc++;
@@ -187,6 +168,9 @@ AsmStatusCode GetRegister(String* string, Assembler* assembler, int cmd_len) {
 	asm_status = FindXinRegister(reg);
 	ASM_ERROR_DEMO(asm_status);
 
+	*(assembler->code + assembler->pc) |= (1 << BIT_FOR_REGISTER);
+	assembler->pc++;
+
 	*(assembler->code + assembler->pc) = *reg - 'a' + 1;
 	assembler->pc++;
 
@@ -204,12 +188,11 @@ AsmStatusCode CodePrinter(Assembler* assembler, const char* file_out) {
 	fprintf(output, "%zu\n", assembler->pc);
 
 	for (size_t i = 0; i < assembler->pc; i++) {
-		int cmd = *(assembler->code + i);
+		int cmd = *(assembler->code + i) & 0x1F;
 
-		fprintf(output, "0x%.2x", cmd);
+		fprintf(output, "0x%.2x", *(assembler->code + i));
 
 		if (cmd == CMD_PUSH  ||
-			cmd == CMD_PUSHR ||
 			cmd == CMD_POP	 ||
 			cmd == CMD_JB)
 			fprintf(output, " 0x%.2x", *(assembler->code + i++ + 1));

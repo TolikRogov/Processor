@@ -5,7 +5,7 @@
 #include <ctype.h>
 #include "../../include/commands.hpp"
 #include "../../include/errors.hpp"
-#include "../../include/CodeProtect.hpp"
+#include "../../include/constants.hpp"
 
 #define RED(str) 		"\033[31;1m" str "\033[0m"
 #define YELLOW(str) 	"\033[33;4m" str "\033[0m"
