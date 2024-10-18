@@ -64,23 +64,26 @@ SPUStatusCode SPURun(SPU* proc) {
 		SPUDump(proc, pc);
 #endif
 
-		switch (*(proc->code + pc)) {
+		switch (*(proc->code + pc) & 0x1F) {
 			case CMD_PUSH: {
-				STACK_PUSH(&stk, *(proc->code + (pc++) + 1));
-				break;
-			}
-			case CMD_PUSHR: {
-				STACK_PUSH(&stk, proc->registers[*(proc->code + (pc++) + 1) - 1]);
-				break;
+				if ((*(proc->code + pc) & (1 << BIT_FOR_NUMBER)) >> BIT_FOR_NUMBER) {
+					STACK_PUSH(&stk, *(proc->code + (pc++) + 1));
+					break;
+				}
+
+				if ((*(proc->code + pc) & (1 << BIT_FOR_REGISTER)) >> BIT_FOR_REGISTER) {
+					STACK_PUSH(&stk, proc->registers[*(proc->code + (pc++) + 1) - 1]);
+					break;
+				}
 			}
 			case CMD_POP: {
-				Stack_elem_t x = 0;
+				if ((*(proc->code + pc) & (1 << BIT_FOR_REGISTER)) >> BIT_FOR_REGISTER) {
+					Stack_elem_t x = 0;
+					STACK_POP(&stk, &x);
 
-				STACK_POP(&stk, &x);
-
-				proc->registers[*(proc->code + (pc++) + 1) - 1] = (int)x;
-
-				break;
+					proc->registers[*(proc->code + (pc++) + 1) - 1] = (int)x;
+					break;
+				}
 			}
 			case CMD_ADD: {
 				Stack_elem_t x1 = 0;
@@ -179,16 +182,18 @@ SPUStatusCode SPURun(SPU* proc) {
 				break;
 			}
 			case CMD_JB: {
-				Stack_elem_t x1 = 0;
-				Stack_elem_t x2 = 0;
+				if ((*(proc->code + pc) & (1 << BIT_FOR_NUMBER)) >> BIT_FOR_NUMBER) {
+					Stack_elem_t x1 = 0;
+					Stack_elem_t x2 = 0;
 
-				STACK_POP(&stk, &x1);
-				STACK_POP(&stk, &x2);
+					STACK_POP(&stk, &x1);
+					STACK_POP(&stk, &x2);
 
-				if (x2 < x1)
-					pc = (size_t)*(proc->code + pc + 1) - 1;
-				else
-					pc++;
+					if (x2 < x1)
+						pc = (size_t)*(proc->code + pc + 1) - 1;
+					else
+						pc++;
+				}
 			}
 			case CMD_HLT:
 				break;
