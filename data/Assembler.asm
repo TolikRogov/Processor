@@ -1,6 +1,10 @@
 push 0
 pop ax
 
+call squares:
+hlt
+
+squares:
 next:
 push ax
 push ax
@@ -15,5 +19,4 @@ pop ax
 push ax
 push 10
 jb next:
-hlt
-
+ret

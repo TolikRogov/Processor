@@ -4,8 +4,15 @@ AsmStatusCode StorageAssembler(Storage* storage, Assembler* assembler) {
 
 	AsmStatusCode asm_status = ASM_NO_ERROR;
 
+	FILE* listing = fopen("../data/listing.txt", "w");
+	if (!listing)
+		ASM_ERROR_DEMO(ASM_FILE_OPEN_ERROR);
+
 	asm_status = AssemblerCtor(storage, assembler);
 	ASM_ERROR_DEMO(asm_status);
+
+	assembler->listing = listing;
+	ListingHeader(assembler);
 
 	for (size_t i = 0; i < storage->str_cnt; i++) {
 
@@ -31,9 +38,19 @@ AsmStatusCode StorageAssembler(Storage* storage, Assembler* assembler) {
 		if (asm_status == ASM_SYNTAX_COMMAND_ERROR)
 			ASM_ERROR_DEMO(asm_status);
 
+		fprintf(listing, "%.6zu\t", i);
+		fprintf(listing, "%6s", command);
+
+		size_t cmd_pc = assembler->pc;
 		*(assembler->code + assembler->pc) |= opCode;
 		asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
 		ASM_ERROR_DEMO(asm_status);
+
+		fprintf(listing, "  %.8d\t", *(assembler->code + cmd_pc));
+		fprintf(listing, " %.8x\t", *(assembler->code + cmd_pc));
+		fprintf(listing, "%.8d ", *(assembler->code + assembler->pc - 1));
+		fprintf(listing, "  %.8x", *(assembler->code + assembler->pc - 1));
+		fprintf(listing, "\n");
 	}
 
 	for (size_t i = 0; i < assembler->labels_table.fixup_size; i++)
@@ -44,6 +61,25 @@ AsmStatusCode StorageAssembler(Storage* storage, Assembler* assembler) {
 	asm_status = AsmDump(assembler, "");
 	ASM_ERROR_DEMO(asm_status);
 #endif
+
+	if (fclose(listing))
+		ASM_ERROR_DEMO(ASM_FILE_CLOSE_ERROR);
+
+	return ASM_NO_ERROR;
+}
+
+AsmStatusCode ListingHeader(Assembler* assembler) {
+
+	fprintf(assembler->listing, "Signature: %s\n", (char*)&assembler->header.signature);
+	fprintf(assembler->listing, "Version: %zu\n", assembler->header.code_version);
+
+	fprintf(assembler->listing, " LINE  ");
+	fprintf(assembler->listing, " CMD_NAME  ");
+	fprintf(assembler->listing, " ARG_NAME  ");
+	fprintf(assembler->listing, " CMD_CODE  ");
+	fprintf(assembler->listing, " CMD__HEX  ");
+	fprintf(assembler->listing, " ARG_CODE  ");
+	fprintf(assembler->listing, " ARG__HEX " "\n");
 
 	return ASM_NO_ERROR;
 }
@@ -87,6 +123,8 @@ AsmStatusCode GetCommand(const char* operation, Commands* opCode) {
 	commands[CMD_COS] 	= "cos";
 	commands[CMD_JB] 	= "jb";
 	commands[CMD_JMP] 	= "jmp";
+	commands[CMD_CALL]	= "call";
+	commands[CMD_RET] 	= "ret";
 
 	for (size_t i = 0; i < COUNT_OF_COMMANDS; i++) {
 		if (StrCmp(operation, commands[i]) == 0) {
@@ -132,6 +170,7 @@ AsmStatusCode GetArgs(String* string, Assembler* assembler, int cmd_len) {
 			asm_status = GetRegister(string, assembler, cmd_len);
 			break;
 		}
+		case CMD_CALL:
 		case CMD_JB:
 		case CMD_JMP: {
 			if (!asm_status) asm_status = GetNumber(string, assembler, cmd_len);
@@ -139,6 +178,7 @@ AsmStatusCode GetArgs(String* string, Assembler* assembler, int cmd_len) {
 			break;
 		}
 		default: {
+			fprintf(assembler->listing, "\t\t------\t");
 			assembler->pc++;
 			break;
 		}
@@ -159,6 +199,7 @@ AsmStatusCode GetNumber(String* string, Assembler* assembler, int cmd_len) {
 
 	*(assembler->code + assembler->pc++) |= BIT_FOR_NUMBER;
 	*(assembler->code + assembler->pc++) = num;
+	fprintf(assembler->listing, "\t\t%6d\t", *(assembler->code + assembler->pc - 1));
 
 	return ASM_NO_ERROR;
 }
@@ -186,6 +227,7 @@ AsmStatusCode GetRegister(String* string, Assembler* assembler, int cmd_len) {
 		ASM_ERROR_DEMO(ASM_WRONG_LETTER_IN_REG_NAME);
 
 	*(assembler->code + assembler->pc++) = (*(reg) == 'x' ? 0 : *reg - 'a' + 1);
+	fprintf(assembler->listing, "\t\t\t%s\t", reg);
 
 	return ASM_NO_ERROR;
 }
@@ -210,6 +252,7 @@ AsmStatusCode GetLabel(String* string, Assembler* assembler, int cmd_len) {
 	*(assembler->code + assembler->pc++) |= BIT_FOR_NUMBER;
 
 	asm_status = LabelStatus(assembler, label);
+	fprintf(assembler->listing, "\t   %8s ", label);
 
 	return ASM_NO_ERROR;
 }
@@ -312,14 +355,14 @@ AsmStatusCode AsmDump(Assembler* assembler, const char* string) {
 
 	printf("\nLabels:\n");
 	for (size_t i = 0; i < assembler->labels_table.label_size; i++)
-		printf("label #%zu: name - %s, addr - %d\n", i, assembler->labels_table.labels[i].name,
-														assembler->labels_table.labels[i].addr);
+		printf("label #%zu: name - %s, addr - %d\n", i + 1, assembler->labels_table.labels[i].name,
+															assembler->labels_table.labels[i].addr);
 	printf("\n");
 
 	printf("\nFixUp:\n");
 	for (size_t i = 0; i < assembler->labels_table.fixup_size; i++)
-		printf("label #%zu: addr - %zu, num - %zu\n", i, assembler->labels_table.undef_labels[i].pc,
-														 assembler->labels_table.undef_labels[i].label_num);
+		printf("label #%zu: addr - %zu, num - %zu\n", i + 1, assembler->labels_table.undef_labels[i].pc,
+															 assembler->labels_table.undef_labels[i].label_num);
 	printf("\n");
 
 	for (size_t i = 0; i < 5 * assembler->pc; i++)

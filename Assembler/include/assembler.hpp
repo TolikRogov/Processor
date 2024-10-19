@@ -5,8 +5,8 @@
 #include "../../Onegin/include/Onegin.hpp"
 #include "../../Onegin/include/Sorting.hpp"
 
-const size_t DEFAULT_LABELS_CAPACITY		= 5;
-const size_t MAX_LABEL_LENGTH 		  		= 32;
+const size_t DEFAULT_LABELS_CAPACITY = 5;
+const size_t MAX_LABEL_LENGTH 		 = 32;
 
 struct FixUp {
 	size_t pc;
@@ -35,6 +35,7 @@ struct Assembler {
 	size_t pc;
 
 	LabelsTable labels_table;
+	FILE* listing;
 };
 
 AsmStatusCode StorageAssembler(Storage* storage, Assembler* assembler);
@@ -53,6 +54,7 @@ AsmStatusCode IncreaseLabels(LabelsTable* labels_table);
 
 AsmStatusCode AsmDump(Assembler* assembler, const char* string);
 
+AsmStatusCode ListingHeader(Assembler* assembler);
 AsmStatusCode CodePrinter(Assembler* assembler, const char* file_out);
 
 #endif // ASSEMBLER_INCLUDE

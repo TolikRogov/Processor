@@ -16,6 +16,8 @@ enum Commands {
 	CMD_COS,
 	CMD_JB,
 	CMD_JMP,
+	CMD_CALL,
+	CMD_RET,
 	COUNT_OF_COMMANDS
 };
 
