@@ -8,7 +8,7 @@
 
 struct SPU {
 	size_t size;
-	int* code; // TODO: double
+	int* code;
 
 	int registers[MAX_REG_AMOUNT];
 };

@@ -8,15 +8,6 @@
 const size_t DEFAULT_LABELS_CAPACITY		= 5;
 const size_t MAX_LABEL_LENGTH 		  		= 32;
 
-const size_t CODE_VERSION 					= 2;
-const char 	 SIGNATURE[sizeof(long double)] = "TGF";
-
-struct McHeader {
-	long double signature;
-	size_t code_version;
-	size_t code_size;
-};
-
 struct FixUp {
 	size_t pc;
 	size_t label_num;

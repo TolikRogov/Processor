@@ -100,7 +100,7 @@ AsmStatusCode GetCommand(const char* operation, Commands* opCode) {
 
 AsmStatusCode AssemblerCtor(Storage* storage, Assembler* assembler) {
 
-	assembler->header = { .signature = *(const long double*)SIGNATURE, .code_size = CODE_VERSION };
+	assembler->header = { .signature = *(const long long*)SIGNATURE, .code_version = CODE_VERSION };
 
 	assembler->labels_table.labels = (Label*)calloc(assembler->labels_table.capacity, sizeof(Label));
 	if (!assembler->labels_table.labels)
@@ -226,7 +226,7 @@ AsmStatusCode CodePrinter(Assembler* assembler, const char* file_out) {
 	if (written_check != sizeof(McHeader))
 		ASM_ERROR_DEMO(ASM_FILE_WRITE_ERROR);
 
-	written_check = fwrite(&assembler->code, sizeof(char), assembler->pc, bin);
+	written_check = fwrite(assembler->code, sizeof(int), assembler->pc, bin);
 	if (written_check != assembler->pc)
 		ASM_ERROR_DEMO(ASM_FILE_WRITE_ERROR);
 

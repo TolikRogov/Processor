@@ -2,7 +2,7 @@
 #define SPU_UTILITIES_INCLUDE
 
 #include <stdio.h>
-#include "../../include/errors.hpp" // try with -I ../../include
+#include "../../include/errors.hpp"
 #include "../../include/commands.hpp"
 #include "../../include/constants.hpp"
 
@@ -14,15 +14,6 @@
 		return status;																								\
 	}																												\
 }
-
-const size_t MAX_SIGNATURE_LENGTH 			 = 20;
-const size_t CODE_VERSION 					 = 2;
-const char 	 SIGNATURE[MAX_SIGNATURE_LENGTH] = "TGF";
-
-struct McHeader {
-	const char* signature = SIGNATURE;
-	size_t code_version   = CODE_VERSION;
-};
 
 const char* SPUErrorsMessenger(SPUStatusCode status);
 

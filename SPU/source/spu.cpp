@@ -4,18 +4,16 @@ SPUStatusCode SPUCtor(SPU* proc, const char* file) {
 
 	SPUStatusCode spu_status = SPU_NO_ERROR;
 
-	FILE* input = fopen(file, "r");
+	FILE* input = fopen(file, "rb");
 	if (!input)
 		SPU_ERROR_DEMO(SPU_FILE_OPEN_ERROR);
 
 	spu_status = CodeHeaderChecker(proc, input);
 	SPU_ERROR_DEMO(spu_status);
 
-	for (size_t i = 0; i < proc->size; i++) {
-		int check = fscanf(input, "%x", (proc->code + i));
-		if (check < 1)
-			SPU_ERROR_DEMO(SPU_FILE_READ_ERROR);
-	}
+	size_t read_check = fread(proc->code, sizeof(int), proc->size, input);
+	if (read_check != proc->size)
+		SPU_ERROR_DEMO(SPU_FILE_READ_ERROR);
 
 	if (fclose(input))
 		SPU_ERROR_DEMO(SPU_FILE_CLOSE_ERROR);
@@ -25,25 +23,19 @@ SPUStatusCode SPUCtor(SPU* proc, const char* file) {
 
 SPUStatusCode CodeHeaderChecker(SPU* proc, FILE* file) {
 
-	char sign[MAX_SIGNATURE_LENGTH] = {};
-	int check = fscanf(file, "%s", sign);
-	if (check < 1)
+	McHeader header = {};
+
+	size_t read_check = fread(&header, sizeof(char), sizeof(McHeader), file);
+	if (read_check != sizeof(McHeader))
 		SPU_ERROR_DEMO(SPU_FILE_READ_ERROR);
 
-	if (StrCmp(sign, SIGNATURE) != 0)
+	if (header.signature != *(const long long*)SIGNATURE)
 		SPU_ERROR_DEMO(SPU_SIGNATURE_ERROR);
 
-	size_t code_version = 0;
-	check = fscanf(file, "%zu", &code_version);
-	if (check < 1)
-		SPU_ERROR_DEMO(SPU_FILE_READ_ERROR);
-
-	if (code_version != CODE_VERSION)
+	if (header.code_version != CODE_VERSION)
 		SPU_ERROR_DEMO(SPU_CODE_VERSION_ERROR);
 
-	check = fscanf(file, "%zu", &proc->size);
-	if (check < 1)
-		SPU_ERROR_DEMO(SPU_FILE_READ_ERROR);
+	proc->size = header.code_size;
 
 	proc->code = (int*)calloc(proc->size, sizeof(int));
 	if (!proc->code)
@@ -52,7 +44,6 @@ SPUStatusCode CodeHeaderChecker(SPU* proc, FILE* file) {
 	return SPU_NO_ERROR;
 }
 
-// TODO: double* GetArg();
 SPUStatusCode SPURun(SPU* proc) {
 
 	INIT_STACK(stk);
@@ -65,20 +56,20 @@ SPUStatusCode SPURun(SPU* proc) {
 		SPUDump(proc, pc);
 #endif
 
-		switch (*(proc->code + pc) & 0x1F) { // TODO: const 0xiF
+		switch (*(proc->code + pc) & MASK_FOR_COMMANDS) {
 			case CMD_PUSH: {
-				if ((*(proc->code + pc) & (1 << BIT_FOR_NUMBER)) >> BIT_FOR_NUMBER) {
+				if (*(proc->code + pc) & BIT_FOR_NUMBER) {
 					STACK_PUSH(&stk, *(proc->code + (pc++) + 1));
 					break;
 				}
 
-				if ((*(proc->code + pc) & (1 << BIT_FOR_REGISTER)) >> BIT_FOR_REGISTER) {
+				if (*(proc->code + pc) & BIT_FOR_REGISTER) {
 					STACK_PUSH(&stk, proc->registers[*(proc->code + (pc++) + 1)]);
 					break;
 				}
 			}
 			case CMD_POP: {
-				if ((*(proc->code + pc) & (1 << BIT_FOR_REGISTER)) >> BIT_FOR_REGISTER) {
+				if (*(proc->code + pc) & BIT_FOR_REGISTER) {
 					Stack_elem_t x = 0;
 					STACK_POP(&stk, &x);
 
@@ -178,12 +169,12 @@ SPUStatusCode SPURun(SPU* proc) {
 
 				STACK_POP(&stk, &result);
 
-				printf(GREEN("result = %d")"\n", (int)result);
+				printf(GREEN("result = %lg")"\n", result);
 
 				break;
 			}
 			case CMD_JB: {
-				if ((*(proc->code + pc) & (1 << BIT_FOR_NUMBER)) >> BIT_FOR_NUMBER) {
+				if (*(proc->code + pc) & BIT_FOR_NUMBER) {
 					Stack_elem_t x1 = 0;
 					Stack_elem_t x2 = 0;
 
@@ -197,7 +188,7 @@ SPUStatusCode SPURun(SPU* proc) {
 				}
 			}
 			case CMD_JMP: {
-				if ((*(proc->code + pc) & (1 << BIT_FOR_NUMBER)) >> BIT_FOR_NUMBER) {
+				if (*(proc->code + pc) & BIT_FOR_NUMBER) {
 					pc = (size_t)*(proc->code + pc++ + 1) - 1;
 				}
 			}
