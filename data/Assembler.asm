@@ -1,4 +1,4 @@
-push 0.23423423
+push 0
 pop ax
 
 next:

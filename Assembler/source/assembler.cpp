@@ -4,17 +4,8 @@ AsmStatusCode StorageAssembler(Storage* storage, Assembler* assembler) {
 
 	AsmStatusCode asm_status = ASM_NO_ERROR;
 
-	assembler->labels_table.labels = (Label*)calloc(assembler->labels_table.capacity, sizeof(Label));
-	if (!assembler->labels_table.labels)
-		ASM_ERROR_DEMO(ASM_ALLOC_ERROR);
-
-	assembler->labels_table.undef_labels = (FixUp*)calloc(assembler->labels_table.capacity, sizeof(FixUp));
-	if (!assembler->labels_table.undef_labels)
-		ASM_ERROR_DEMO(ASM_ALLOC_ERROR);
-
-	assembler->code = (int*)calloc(storage->str_cnt * 2, sizeof(int));
-	if (!assembler->code)
-		ASM_ERROR_DEMO(ASM_ALLOC_ERROR);
+	asm_status = AssemblerCtor(storage, assembler);
+	ASM_ERROR_DEMO(asm_status);
 
 	for (size_t i = 0; i < storage->str_cnt; i++) {
 
@@ -31,109 +22,18 @@ AsmStatusCode StorageAssembler(Storage* storage, Assembler* assembler) {
 		ASM_ERROR_DEMO(asm_status);
 #endif
 
-		asm_status = FindCharInString(command, ':');
-		if (asm_status == ASM_NO_ERROR) {
-			asm_status = IncreaseLabels(assembler);
+		asm_status = LabelCheck(assembler, command);
+		if (asm_status == ASM_NO_ERROR)
+			continue;
+
+		Commands opCode = (Commands)0;
+		asm_status = GetCommand(command, &opCode);
+		if (asm_status == ASM_SYNTAX_COMMAND_ERROR)
 			ASM_ERROR_DEMO(asm_status);
 
-			asm_status = FindLabelInTable(assembler, command);
-			if (asm_status == ASM_NO_ERROR)
-				continue;
-
-			for (size_t j = 0; *(command + j) != '\0'; j++)
-				assembler->labels_table.labels[assembler->labels_table.label_size].name[j] = command[j];
-			assembler->labels_table.labels[assembler->labels_table.label_size++].addr = assembler->pc;
-			continue;
-		}
-
-		// Func GetCommand(char*) {return EnumCode}
-		if (StrCmp(command, "push") == 0) {
-			*(assembler->code + assembler->pc) |= CMD_PUSH;
-			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
-			ASM_ERROR_DEMO(asm_status);
-			continue;
-		}
-		if (StrCmp(command, "pop") == 0) {
-			*(assembler->code + assembler->pc) |= CMD_POP;
-			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
-			ASM_ERROR_DEMO(asm_status);
-			continue;
-		}
-		if (StrCmp(command, "hlt") == 0) {
-			*(assembler->code + assembler->pc) |= CMD_HLT;
-			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
-			ASM_ERROR_DEMO(asm_status);
-			continue;
-		}
-		if (StrCmp(command, "add") == 0) {
-			*(assembler->code + assembler->pc) |= CMD_ADD;
-			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
-			ASM_ERROR_DEMO(asm_status);
-			continue;
-		}
-		if (StrCmp(command, "sub") == 0) {
-			*(assembler->code + assembler->pc) |= CMD_SUB;
-			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
-			ASM_ERROR_DEMO(asm_status);
-			continue;
-		}
-		if (StrCmp(command, "div") == 0) {
-			*(assembler->code + assembler->pc) |= CMD_DIV;
-			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
-			ASM_ERROR_DEMO(asm_status);
-			continue;
-		}
-		if (StrCmp(command, "out") == 0) {
-			*(assembler->code + assembler->pc) |= CMD_OUT;
-			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
-			ASM_ERROR_DEMO(asm_status);
-			continue;
-		}
-		if (StrCmp(command, "mul") == 0) {
-			*(assembler->code + assembler->pc) |= CMD_MUL;
-			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
-			ASM_ERROR_DEMO(asm_status);
-			continue;
-		}
-		if (StrCmp(command, "in") == 0) {
-			*(assembler->code + assembler->pc) |= CMD_IN;
-			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
-			ASM_ERROR_DEMO(asm_status);
-			continue;
-		}
-		if (StrCmp(command, "sqrt") == 0) {
-			*(assembler->code + assembler->pc) |= CMD_SQRT;
-			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
-			ASM_ERROR_DEMO(asm_status);
-			continue;
-		}
-		if (StrCmp(command, "sin") == 0) {
-			*(assembler->code + assembler->pc) |= CMD_SIN;
-			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
-			ASM_ERROR_DEMO(asm_status);
-			continue;
-		}
-		if (StrCmp(command, "cos") == 0) {
-			*(assembler->code + assembler->pc) |= CMD_COS;
-			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
-			ASM_ERROR_DEMO(asm_status);
-			continue;
-		}
-		if (StrCmp(command, "jb") == 0) {
-			*(assembler->code + assembler->pc) |= CMD_JB;
-			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
-			ASM_ERROR_DEMO(asm_status);
-			continue;
-		}
-		if (StrCmp(command, "jmp") == 0) {
-			*(assembler->code + assembler->pc) |= CMD_JMP;
-			asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
-			ASM_ERROR_DEMO(asm_status);
-			continue;
-		}
-
-		ASM_ERROR_DEMO(ASM_SYNTAX_COMMAND_ERROR);
-
+		*(assembler->code + assembler->pc) |= opCode;
+		asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
+		ASM_ERROR_DEMO(asm_status);
 	}
 
 	for (size_t i = 0; i < assembler->labels_table.fixup_size; i++)
@@ -148,6 +48,75 @@ AsmStatusCode StorageAssembler(Storage* storage, Assembler* assembler) {
 	return ASM_NO_ERROR;
 }
 
+AsmStatusCode LabelCheck(Assembler* assembler, char* string) {
+
+	AsmStatusCode asm_status = ASM_NO_ERROR;
+
+	asm_status = FindCharInString(string, ':');
+	if (asm_status != ASM_NO_ERROR)
+		return ASM_UNDEFINE_LABEL;
+
+	asm_status = IncreaseLabels(&assembler->labels_table);
+	ASM_ERROR_DEMO(asm_status);
+
+	asm_status = FindLabelInTable(assembler, string);
+	if (asm_status == ASM_NO_ERROR)
+		return ASM_NO_ERROR;
+
+	for (size_t j = 0; *(string + j) != '\0'; j++)
+		assembler->labels_table.labels[assembler->labels_table.label_size].name[j] = string[j];
+	assembler->labels_table.labels[assembler->labels_table.label_size++].addr = (int)assembler->pc;
+
+	return ASM_NO_ERROR;
+}
+
+AsmStatusCode GetCommand(const char* operation, Commands* opCode) {
+
+	static const char* commands[COUNT_OF_COMMANDS] = {};
+	commands[CMD_PUSH] 	= "push";
+	commands[CMD_POP] 	= "pop";
+	commands[CMD_HLT]	= "hlt";
+	commands[CMD_ADD] 	= "add";
+	commands[CMD_SUB] 	= "sub";
+	commands[CMD_MUL] 	= "mul";
+	commands[CMD_DIV] 	= "div";
+	commands[CMD_OUT] 	= "out";
+	commands[CMD_IN] 	= "in";
+	commands[CMD_SQRT] 	= "sqrt";
+	commands[CMD_SIN] 	= "sin";
+	commands[CMD_COS] 	= "cos";
+	commands[CMD_JB] 	= "jb";
+	commands[CMD_JMP] 	= "jmp";
+
+	for (size_t i = 0; i < COUNT_OF_COMMANDS; i++) {
+		if (StrCmp(operation, commands[i]) == 0) {
+			*opCode = (Commands)i;
+			return ASM_NO_ERROR;
+		}
+	}
+
+	return ASM_SYNTAX_COMMAND_ERROR;
+}
+
+AsmStatusCode AssemblerCtor(Storage* storage, Assembler* assembler) {
+
+	assembler->header = { .signature = *(const long double*)SIGNATURE, .code_size = CODE_VERSION };
+
+	assembler->labels_table.labels = (Label*)calloc(assembler->labels_table.capacity, sizeof(Label));
+	if (!assembler->labels_table.labels)
+		ASM_ERROR_DEMO(ASM_ALLOC_ERROR);
+
+	assembler->labels_table.undef_labels = (FixUp*)calloc(assembler->labels_table.capacity, sizeof(FixUp));
+	if (!assembler->labels_table.undef_labels)
+		ASM_ERROR_DEMO(ASM_ALLOC_ERROR);
+
+	assembler->code = (int*)calloc(storage->str_cnt * 2, sizeof(int));
+	if (!assembler->code)
+		ASM_ERROR_DEMO(ASM_ALLOC_ERROR);
+
+	return ASM_NO_ERROR;
+};
+
 AsmStatusCode GetArgs(String* string, Assembler* assembler, int cmd_len) {
 
 	AsmStatusCode asm_status = ASM_NO_ERROR;
@@ -155,20 +124,18 @@ AsmStatusCode GetArgs(String* string, Assembler* assembler, int cmd_len) {
 	switch (*(assembler->code + assembler->pc)) {
 
 		case CMD_PUSH: {
-			if (!asm_status)  asm_status = GetNumber(string, assembler, cmd_len);
-			if (asm_status)   asm_status = GetRegister(string, assembler, cmd_len);
-			break;
-		}
-		case CMD_JB: {
-			asm_status = GetLabel(string, assembler, cmd_len);
-			break;
-		}
-		case CMD_JMP: {
-			asm_status = GetLabel(string, assembler, cmd_len);
+			if (!asm_status) asm_status = GetNumber(string, assembler, cmd_len);
+			if (asm_status)  asm_status = GetRegister(string, assembler, cmd_len);
 			break;
 		}
 		case CMD_POP: {
 			asm_status = GetRegister(string, assembler, cmd_len);
+			break;
+		}
+		case CMD_JB:
+		case CMD_JMP: {
+			if (!asm_status) asm_status = GetNumber(string, assembler, cmd_len);
+			if (asm_status)  asm_status = GetLabel(string, assembler, cmd_len);
 			break;
 		}
 		default: {
@@ -190,8 +157,7 @@ AsmStatusCode GetNumber(String* string, Assembler* assembler, int cmd_len) {
 	if (symbols_num < 1)
 		return ASM_COMMAND_READ_ERROR;
 
-											// TODO: Enum Args {}
-	*(assembler->code + assembler->pc++) |= (1 << BIT_FOR_NUMBER);
+	*(assembler->code + assembler->pc++) |= BIT_FOR_NUMBER;
 	*(assembler->code + assembler->pc++) = num;
 
 	return ASM_NO_ERROR;
@@ -204,7 +170,6 @@ AsmStatusCode GetRegister(String* string, Assembler* assembler, int cmd_len) {
 	if (string->cur_str_size > MAX_COMMAND_LENGTH + REGISTER_NAME_LENGTH)
 		ASM_ERROR_DEMO(ASM_BIG_NAME_FOR_REGISTER);
 
-	// Res_Name_len = 3;
 	char reg[REGISTER_NAME_LENGTH + 1] = {};
 	int symbols_num = sscanf(string->cur_str + cmd_len, "%s", reg);
 	if (symbols_num < 1)
@@ -215,7 +180,7 @@ AsmStatusCode GetRegister(String* string, Assembler* assembler, int cmd_len) {
 	asm_status = FindCharInString(reg, 'x');
 	ASM_ERROR_DEMO(asm_status);
 
-	*(assembler->code + assembler->pc++) |= (1 << BIT_FOR_REGISTER);
+	*(assembler->code + assembler->pc++) |= BIT_FOR_REGISTER;
 
 	if ((size_t)(*reg - 'a' + 1) > MAX_REG_AMOUNT - 1 && *(reg) != 'x')
 		ASM_ERROR_DEMO(ASM_WRONG_LETTER_IN_REG_NAME);
@@ -239,10 +204,10 @@ AsmStatusCode GetLabel(String* string, Assembler* assembler, int cmd_len) {
 
 	StringToLower(label);
 
-	asm_status = IncreaseLabels(assembler);
+	asm_status = IncreaseLabels(&assembler->labels_table);
 	ASM_ERROR_DEMO(asm_status);
 
-	*(assembler->code + assembler->pc++) |= (1 << BIT_FOR_NUMBER);
+	*(assembler->code + assembler->pc++) |= BIT_FOR_NUMBER;
 
 	asm_status = LabelStatus(assembler, label);
 
@@ -251,48 +216,38 @@ AsmStatusCode GetLabel(String* string, Assembler* assembler, int cmd_len) {
 
 AsmStatusCode CodePrinter(Assembler* assembler, const char* file_out) {
 
-	FILE* output = fopen(file_out, "w");
-	if (!output)
+	FILE* bin = fopen(file_out, "wb");
+	if (!bin)
 		ASM_ERROR_DEMO(ASM_FILE_OPEN_ERROR);
 
-	fprintf(output, "%s\n", assembler->header.signature);
-	fprintf(output, "%zu\n", assembler->header.code_version);
-	fprintf(output, "%zu\n", assembler->pc);
+	assembler->header.code_size = assembler->pc;
 
-	// TODO: fwrite(buffer, file)
-	for (size_t i = 0; i < assembler->pc; i++) {
-		int cmd = *(assembler->code + i) & 0x1F;
+	size_t written_check = fwrite(&assembler->header, sizeof(char), sizeof(McHeader), bin);
+	if (written_check != sizeof(McHeader))
+		ASM_ERROR_DEMO(ASM_FILE_WRITE_ERROR);
 
-		fprintf(output, "0x%.2x", *(assembler->code + i));
+	written_check = fwrite(&assembler->code, sizeof(char), assembler->pc, bin);
+	if (written_check != assembler->pc)
+		ASM_ERROR_DEMO(ASM_FILE_WRITE_ERROR);
 
-		if (cmd == CMD_PUSH  ||
-			cmd == CMD_POP	 ||
-			cmd == CMD_JB	 ||
-			cmd == CMD_JMP)
-			fprintf(output, " 0x%.2x", *(assembler->code + i++ + 1));
-
-		fprintf(output, "\n");
-	}
-
-	if (fclose(output))
+	if (fclose(bin))
 		ASM_ERROR_DEMO(ASM_FILE_CLOSE_ERROR);
 
 	return ASM_NO_ERROR;
 }
 
-// TODO: In other file
-AsmStatusCode IncreaseLabels(Assembler* assembler) {
+AsmStatusCode IncreaseLabels(LabelsTable* labels_table) {
 
-	if (assembler->labels_table.capacity == assembler->labels_table.label_size ||
-		assembler->labels_table.capacity == assembler->labels_table.fixup_size) {
-		assembler->labels_table.labels = (Label*)realloc(assembler->labels_table.labels,
-														(assembler->labels_table.capacity *= 2) * sizeof(Label));
-		if (!assembler->labels_table.labels)
+	if (labels_table->capacity == labels_table->label_size ||
+		labels_table->capacity == labels_table->fixup_size) {
+		labels_table->labels = (Label*)realloc(labels_table->labels,
+											  (labels_table->capacity *= 2) * sizeof(Label));
+		if (!labels_table->labels)
 			ASM_ERROR_DEMO(ASM_ALLOC_ERROR);
 
-		assembler->labels_table.undef_labels = (FixUp*)realloc(assembler->labels_table.undef_labels,
-															   assembler->labels_table.capacity * sizeof(FixUp));
-		if (!assembler->labels_table.undef_labels)
+		labels_table->undef_labels = (FixUp*)realloc(labels_table->undef_labels,
+													 labels_table->capacity * sizeof(FixUp));
+		if (!labels_table->undef_labels)
 			ASM_ERROR_DEMO(ASM_ALLOC_ERROR);
 	}
 
@@ -301,20 +256,23 @@ AsmStatusCode IncreaseLabels(Assembler* assembler) {
 
 AsmStatusCode LabelStatus(Assembler* assembler, char* label) {
 
-	for (size_t i = 0; i < assembler->labels_table.label_size; i++) {
-		if (StrCmp(assembler->labels_table.labels[i].name, label) == 0) {
-			*(assembler->code + assembler->pc++) = (int)assembler->labels_table.labels[i].addr;
+	LabelsTable* labels_table = &assembler->labels_table;
+
+	for (size_t i = 0; i < labels_table->label_size; i++) {
+		if (StrCmp(labels_table->labels[i].name, label) == 0) {
+			*(assembler->code + assembler->pc++) = labels_table->labels[i].addr;
 			return ASM_NO_ERROR;
 		}
 	}
 
 	for (size_t i = 0; *(label + i) != '\0'; i++)
-		assembler->labels_table.labels[assembler->labels_table.label_size].name[i] = label[i];
-	assembler->labels_table.labels[assembler->labels_table.label_size].addr = 666;
-	*(assembler->code + assembler->pc++) = (int)assembler->labels_table.labels[assembler->labels_table.label_size++].addr;
+		labels_table->labels[labels_table->label_size].name[i] = label[i];
+	*(assembler->code + assembler->pc++) = labels_table->labels[labels_table->label_size++].addr = -1;
 
-	assembler->labels_table.undef_labels[assembler->labels_table.fixup_size].label_num = assembler->labels_table.label_size;
-	assembler->labels_table.undef_labels[assembler->labels_table.fixup_size++].pc = assembler->pc;
+	FixUp* cur_fix_up = &labels_table->undef_labels[labels_table->fixup_size++];
+
+	cur_fix_up->label_num = labels_table->label_size;
+	cur_fix_up->pc = assembler->pc;
 
 	return ASM_UNDEFINE_LABEL;
 }
@@ -323,7 +281,7 @@ AsmStatusCode FindLabelInTable(Assembler* assembler, char* label) {
 
 	for (size_t j = 0; j < assembler->labels_table.label_size; j++) {
 		if (StrCmp(assembler->labels_table.labels[j].name, label) == 0) {
-			assembler->labels_table.labels[j].addr = assembler->pc;
+			assembler->labels_table.labels[j].addr = (int)assembler->pc;
 			return ASM_NO_ERROR;
 		}
 	}
@@ -354,8 +312,8 @@ AsmStatusCode AsmDump(Assembler* assembler, const char* string) {
 
 	printf("\nLabels:\n");
 	for (size_t i = 0; i < assembler->labels_table.label_size; i++)
-		printf("label #%zu: name - %s, addr - %zu\n", i, assembler->labels_table.labels[i].name,
-														 assembler->labels_table.labels[i].addr);
+		printf("label #%zu: name - %s, addr - %d\n", i, assembler->labels_table.labels[i].name,
+														assembler->labels_table.labels[i].addr);
 	printf("\n");
 
 	printf("\nFixUp:\n");

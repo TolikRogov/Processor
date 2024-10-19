@@ -4,7 +4,6 @@
 enum Commands {
 	CMD_HLT,
 	CMD_PUSH,
-	CMD_PUSHR,
 	CMD_POP,
 	CMD_ADD,
 	CMD_SUB,
@@ -16,7 +15,8 @@ enum Commands {
 	CMD_SIN,
 	CMD_COS,
 	CMD_JB,
-	CMD_JMP
+	CMD_JMP,
+	COUNT_OF_COMMANDS
 };
 
 #endif
