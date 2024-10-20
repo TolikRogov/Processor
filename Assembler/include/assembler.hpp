@@ -47,6 +47,7 @@ AsmStatusCode GetArgs(String* string, Assembler* assembler, int cmd_len);
 AsmStatusCode GetNumber(String* string, Assembler* assembler, int cmd_len);
 AsmStatusCode GetRegister(String* string, Assembler* assembler, int cmd_len);
 AsmStatusCode GetLabel(String* string, Assembler* assembler, int cmd_len);
+AsmStatusCode MemoryUseCheck(String* string, Assembler* assembler, int cmd_len);
 
 AsmStatusCode LabelStatus(Assembler* assembler, char* label);
 AsmStatusCode FindLabelInTable(Assembler* assembler, char* label);

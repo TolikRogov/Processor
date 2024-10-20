@@ -7,6 +7,9 @@ pop ax
 push 1
 pop cx
 
+push [1]
+push [ax]
+
 push 0
 pop dx
 

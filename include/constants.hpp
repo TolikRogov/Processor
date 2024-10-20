@@ -20,8 +20,8 @@ struct McHeader {
 enum Args {
 	MASK_FOR_COMMANDS 	= 0x1F,
 	BIT_FOR_NUMBER 		= 1 << 5,
-	BIT_FOR_MEMORY 		= 1 << 6,
-	BIT_FOR_REGISTER 	= 1 << 7
+	BIT_FOR_REGISTER 	= 1 << 6,
+	BIT_FOR_MEMORY 		= 1 << 7
 };
 
 #endif // CONSTANTS_INCLUDE
