@@ -1,22 +1,33 @@
-push 0
+in
+pop bx
+
+in
 pop ax
 
-call squares:
+push 1
+pop cx
+
+push 0
+pop dx
+
+call power:
 hlt
 
-squares:
-next:
-push ax
-push ax
-mul
-out
+power:
+	start:
+		push bx
+		push cx
+		mul
+		pop cx
 
-push ax
-push 1
-add
-pop ax
+		push dx
+		push 1
+		add
+		pop dx
 
-push ax
-push 10
-jb next:
+		push dx
+		push ax
+	jb start:
+	push cx
+	out
 ret

@@ -47,8 +47,10 @@ SPUStatusCode CodeHeaderChecker(SPU* proc, FILE* file) {
 SPUStatusCode SPURun(SPU* proc) {
 
 	INIT_STACK(stk);
+	INIT_STACK(ret_addr_stk);
 
 	STACK_CTOR(&stk, 1);
+	STACK_CTOR(&ret_addr_stk, 1);
 
 	for (size_t pc = 0; pc < proc->size; pc++) {
 
@@ -186,21 +188,41 @@ SPUStatusCode SPURun(SPU* proc) {
 					else
 						pc++;
 				}
+				break;
 			}
 			case CMD_JMP: {
 				if (*(proc->code + pc) & BIT_FOR_NUMBER) {
 					pc = (size_t)*(proc->code + pc++ + 1) - 1;
 				}
-			}
-			case CMD_HLT:
 				break;
+			}
+			case CMD_CALL: {
+				if (*(proc->code + pc) & BIT_FOR_NUMBER) {
+					STACK_PUSH(&ret_addr_stk, pc + 1);
+
+					pc = (size_t)*(proc->code + pc++ + 1) - 1;
+				}
+				break;
+			}
+			case CMD_RET: {
+				Stack_elem_t ret = 0;
+
+				STACK_POP(&ret_addr_stk, &ret);
+
+				pc = (size_t)ret;
+
+				break;
+			}
+			case CMD_HLT: {
+				DoStackDtor(&stk);
+				DoStackDtor(&ret_addr_stk);
+				return SPU_NO_ERROR;
+			}
 			default:
 				SPU_ERROR_DEMO(SPU_COMMAND_ERROR);
 		}
 
 	}
-
-	DoStackDtor(&stk);
 
 	return SPU_NO_ERROR;
 }
@@ -212,15 +234,15 @@ SPUStatusCode SPUDump(SPU* proc, size_t pc) {
 	printf("\n");
 
 	for (size_t i = 0; i < proc->size; i++)
-		printf("%.2zu ", i);
+		printf("%.3zu ", i);
 	printf("\n");
 
 	for (size_t i = 0; i < proc->size; i++)
-		printf("%.2d ", *(proc->code + i));
+		printf("%.3d ", *(proc->code + i));
 	printf("\n");
 
 	for (size_t i = 0; i < pc; i++)
-		printf("   ");
+		printf("    ");
 	printf(YELLOW("^")"\n");
 
 	printf("pc = %zu\n", pc);

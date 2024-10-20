@@ -13,6 +13,9 @@
 
 #define MAX(x, y) (x) > (y) ? (x) : (y)
 
+#define ALIGNMENT "8"
+#define LISTING_HEADER_PRINT(file, str) fprintf(file, "%" ALIGNMENT "s%s", str, "\t");
+
 #define ASM_ERROR_DEMO(status) {														 							 \
 	if (status != ASM_NO_ERROR)	{																					\
 		fprintf(stderr, "\n\n" RED("Error (code %d): %s, ") YELLOW("File: %s, Function: %s, Line: %d\n\n"),   		\

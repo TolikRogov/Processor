@@ -38,24 +38,32 @@ AsmStatusCode StorageAssembler(Storage* storage, Assembler* assembler) {
 		if (asm_status == ASM_SYNTAX_COMMAND_ERROR)
 			ASM_ERROR_DEMO(asm_status);
 
-		fprintf(listing, "%.6zu\t", i);
-		fprintf(listing, "%6s", command);
+		fprintf(listing, "%." ALIGNMENT "zu\t", i);
+		fprintf(listing, "%" ALIGNMENT "s\t", command);
 
-		size_t cmd_pc = assembler->pc;
 		*(assembler->code + assembler->pc) |= opCode;
 		asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
 		ASM_ERROR_DEMO(asm_status);
 
-		fprintf(listing, "  %.8d\t", *(assembler->code + cmd_pc));
-		fprintf(listing, " %.8x\t", *(assembler->code + cmd_pc));
-		fprintf(listing, "%.8d ", *(assembler->code + assembler->pc - 1));
-		fprintf(listing, "  %.8x", *(assembler->code + assembler->pc - 1));
 		fprintf(listing, "\n");
 	}
 
-	for (size_t i = 0; i < assembler->labels_table.fixup_size; i++)
+	fprintf(listing, "FixUps: \n");
+
+	for (size_t i = 0; i < assembler->labels_table.fixup_size; i++) {
 		*(assembler->code + assembler->labels_table.undef_labels[i].pc - 1) =
-		(int)assembler->labels_table.labels[assembler->labels_table.undef_labels[i].label_num - 1].addr;
+		assembler->labels_table.labels[assembler->labels_table.undef_labels[i].label_num - 1].addr;
+		fprintf(listing, "\t%" ALIGNMENT "s" " #%zu, addr %d, fix %zu",
+				assembler->labels_table.labels[assembler->labels_table.undef_labels[i].label_num - 1].name,
+				assembler->labels_table.undef_labels[i].label_num,
+				assembler->labels_table.labels[assembler->labels_table.undef_labels[i].label_num - 1].addr,
+				assembler->labels_table.undef_labels[i].pc - 1);
+	}
+	fprintf(listing, "\n");
+
+	assembler->header.code_size = assembler->pc;
+
+	fprintf(listing, "Code size: %zu\n", assembler->header.code_size);
 
 #ifdef ASM_DUMP
 	asm_status = AsmDump(assembler, "");
@@ -70,16 +78,19 @@ AsmStatusCode StorageAssembler(Storage* storage, Assembler* assembler) {
 
 AsmStatusCode ListingHeader(Assembler* assembler) {
 
-	fprintf(assembler->listing, "Signature: %s\n", (char*)&assembler->header.signature);
-	fprintf(assembler->listing, "Version: %zu\n", assembler->header.code_version);
+	FILE* lst = assembler->listing;
 
-	fprintf(assembler->listing, " LINE  ");
-	fprintf(assembler->listing, " CMD_NAME  ");
-	fprintf(assembler->listing, " ARG_NAME  ");
-	fprintf(assembler->listing, " CMD_CODE  ");
-	fprintf(assembler->listing, " CMD__HEX  ");
-	fprintf(assembler->listing, " ARG_CODE  ");
-	fprintf(assembler->listing, " ARG__HEX " "\n");
+	fprintf(lst, "Signature: %s\n", (char*)&assembler->header.signature);
+	fprintf(lst, "Version: %zu\n", assembler->header.code_version);
+
+	LISTING_HEADER_PRINT(lst, "LINE");
+	LISTING_HEADER_PRINT(lst, "CMD_NAME");
+	LISTING_HEADER_PRINT(lst, "ARG_NAME");
+	LISTING_HEADER_PRINT(lst, "CMD_CODE");
+	LISTING_HEADER_PRINT(lst, "CMD_HEX");
+	LISTING_HEADER_PRINT(lst, "ARG_CODE");
+	LISTING_HEADER_PRINT(lst, "ARG_HEX");
+	fprintf(lst, "\n");
 
 	return ASM_NO_ERROR;
 }
@@ -159,6 +170,8 @@ AsmStatusCode GetArgs(String* string, Assembler* assembler, int cmd_len) {
 
 	AsmStatusCode asm_status = ASM_NO_ERROR;
 
+	FILE* lst = assembler->listing;
+
 	switch (*(assembler->code + assembler->pc)) {
 
 		case CMD_PUSH: {
@@ -178,7 +191,12 @@ AsmStatusCode GetArgs(String* string, Assembler* assembler, int cmd_len) {
 			break;
 		}
 		default: {
-			fprintf(assembler->listing, "\t\t------\t");
+			size_t cmd_pc = assembler->pc;
+			fprintf(lst, "%" ALIGNMENT "s", "--------\t");
+			fprintf(lst, "%." ALIGNMENT "d\t", *(assembler->code + cmd_pc));
+			fprintf(lst, "%." ALIGNMENT "x\t", *(assembler->code + cmd_pc));
+			fprintf(lst, "%" ALIGNMENT "s", "--------\t");
+			fprintf(lst, "%" ALIGNMENT "s", "--------\t");
 			assembler->pc++;
 			break;
 		}
@@ -192,14 +210,23 @@ AsmStatusCode GetArgs(String* string, Assembler* assembler, int cmd_len) {
 
 AsmStatusCode GetNumber(String* string, Assembler* assembler, int cmd_len) {
 
+	FILE* lst = assembler->listing;
+
 	int num = 0;
 	int symbols_num = sscanf(string->cur_str + cmd_len, "%d", &num);
 	if (symbols_num < 1)
 		return ASM_COMMAND_READ_ERROR;
 
+	size_t cmd_pc = assembler->pc;
+
 	*(assembler->code + assembler->pc++) |= BIT_FOR_NUMBER;
 	*(assembler->code + assembler->pc++) = num;
-	fprintf(assembler->listing, "\t\t%6d\t", *(assembler->code + assembler->pc - 1));
+
+	fprintf(lst, "%" ALIGNMENT "d\t", *(assembler->code + assembler->pc - 1));
+	fprintf(lst, "%." ALIGNMENT "d\t", *(assembler->code + cmd_pc));
+	fprintf(lst, "%." ALIGNMENT "x\t", *(assembler->code + cmd_pc));
+	fprintf(lst, "%." ALIGNMENT "d\t", *(assembler->code + assembler->pc - 1));
+	fprintf(lst, "%." ALIGNMENT "x\t", *(assembler->code + assembler->pc - 1));
 
 	return ASM_NO_ERROR;
 }
@@ -207,6 +234,8 @@ AsmStatusCode GetNumber(String* string, Assembler* assembler, int cmd_len) {
 AsmStatusCode GetRegister(String* string, Assembler* assembler, int cmd_len) {
 
 	AsmStatusCode asm_status = ASM_NO_ERROR;
+
+	FILE* lst = assembler->listing;
 
 	if (string->cur_str_size > MAX_COMMAND_LENGTH + REGISTER_NAME_LENGTH)
 		ASM_ERROR_DEMO(ASM_BIG_NAME_FOR_REGISTER);
@@ -221,13 +250,20 @@ AsmStatusCode GetRegister(String* string, Assembler* assembler, int cmd_len) {
 	asm_status = FindCharInString(reg, 'x');
 	ASM_ERROR_DEMO(asm_status);
 
+	size_t cmd_pc = assembler->pc;
+
 	*(assembler->code + assembler->pc++) |= BIT_FOR_REGISTER;
 
 	if ((size_t)(*reg - 'a' + 1) > MAX_REG_AMOUNT - 1 && *(reg) != 'x')
 		ASM_ERROR_DEMO(ASM_WRONG_LETTER_IN_REG_NAME);
 
 	*(assembler->code + assembler->pc++) = (*(reg) == 'x' ? 0 : *reg - 'a' + 1);
-	fprintf(assembler->listing, "\t\t\t%s\t", reg);
+
+	fprintf(lst, "%" ALIGNMENT "s\t", reg);
+	fprintf(lst, "%." ALIGNMENT "d\t", *(assembler->code + cmd_pc));
+	fprintf(lst, "%." ALIGNMENT "x\t", *(assembler->code + cmd_pc));
+	fprintf(lst, "%." ALIGNMENT "d\t", *(assembler->code + assembler->pc - 1));
+	fprintf(lst, "%." ALIGNMENT "x\t", *(assembler->code + assembler->pc - 1));
 
 	return ASM_NO_ERROR;
 }
@@ -235,6 +271,8 @@ AsmStatusCode GetRegister(String* string, Assembler* assembler, int cmd_len) {
 AsmStatusCode GetLabel(String* string, Assembler* assembler, int cmd_len) {
 
 	AsmStatusCode asm_status = ASM_NO_ERROR;
+
+	FILE* lst = assembler->listing;
 
 	if (string->cur_str_size > MAX_COMMAND_LENGTH + MAX_LABEL_LENGTH)
 		ASM_ERROR_DEMO(ASM_BIG_NAME_FOR_LABEL);
@@ -249,10 +287,24 @@ AsmStatusCode GetLabel(String* string, Assembler* assembler, int cmd_len) {
 	asm_status = IncreaseLabels(&assembler->labels_table);
 	ASM_ERROR_DEMO(asm_status);
 
+	size_t cmd_pc = assembler->pc;
+
 	*(assembler->code + assembler->pc++) |= BIT_FOR_NUMBER;
 
 	asm_status = LabelStatus(assembler, label);
-	fprintf(assembler->listing, "\t   %8s ", label);
+
+	fprintf(lst, "%" ALIGNMENT "s\t", label);
+	fprintf(lst, "%." ALIGNMENT "d\t", *(assembler->code + cmd_pc));
+	fprintf(lst, "%." ALIGNMENT "x\t", *(assembler->code + cmd_pc));
+
+	if (*(assembler->code + assembler->pc - 1) != -1) {
+		fprintf(lst, "%." ALIGNMENT "d\t", *(assembler->code + assembler->pc - 1));
+		fprintf(lst, "%." ALIGNMENT "x\t", *(assembler->code + assembler->pc - 1));
+	}
+	else {
+		fprintf(lst, "%" ALIGNMENT "s", "????????\t");
+		fprintf(lst, "%" ALIGNMENT "s", "????????\t");
+	}
 
 	return ASM_NO_ERROR;
 }
@@ -262,8 +314,6 @@ AsmStatusCode CodePrinter(Assembler* assembler, const char* file_out) {
 	FILE* bin = fopen(file_out, "wb");
 	if (!bin)
 		ASM_ERROR_DEMO(ASM_FILE_OPEN_ERROR);
-
-	assembler->header.code_size = assembler->pc;
 
 	size_t written_check = fwrite(&assembler->header, sizeof(char), sizeof(McHeader), bin);
 	if (written_check != sizeof(McHeader))
