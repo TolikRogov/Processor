@@ -20,8 +20,6 @@ struct SPU {
 
 SPUStatusCode SPUCtor(SPU* proc, const char* file);
 SPUStatusCode CodeHeaderChecker(SPU* proc, FILE* file);
-SPUStatusCode SPUDump(SPU* proc, size_t pc);
-SPUStatusCode LogDump(SPU* proc);
 SPUStatusCode SPURun(SPU* proc);
 
 #endif // SPU_INCLUDE

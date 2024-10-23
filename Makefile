@@ -11,7 +11,7 @@ default:
 		cd $$dir; $(MAKE); cd ../; \
 	done
 
-$(PUSK):
+$(PUSK): default
 	clear
 	@for dir in $(PROJECTS); do \
 		cd $$dir; $(MAKE) $@; cd ../; \

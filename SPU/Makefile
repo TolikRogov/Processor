@@ -14,7 +14,7 @@ CFLAGS  = -c $(DFLAGS) -fsanitize=address,alignment -I$(SUB_STACK)/$(INCLUDE) -I
 LDFLAGS = -fsanitize=address,alignment
 
 STACK_OBJECTS = $(BUILD_DIR)/stack.o $(BUILD_DIR)/log.o $(BUILD_DIR)/stack_utilities.o
-SPU_OBJECTS = $(BUILD_DIR)/spu_utilities.o $(BUILD_DIR)/spu.o
+SPU_OBJECTS = $(BUILD_DIR)/spu_utilities.o $(BUILD_DIR)/spu.o $(BUILD_DIR)/spu_dump.o
 ONEGIN_OBJECTS = $(BUILD_DIR)/Sorting.o $(BUILD_DIR)/utilities.o
 
 OBJECTS = $(BUILD_DIR)/main.o $(STACK_OBJECTS) $(SPU_OBJECTS) $(ONEGIN_OBJECTS)

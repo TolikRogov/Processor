@@ -14,7 +14,7 @@ CFLAGS = -c $(DFLAGS) -fsanitize=address,alignment -I$(INCLUDE) -I$(GENERAL_INCL
 LDFLAGS = -fsanitize=address,alignment
 
 ONEGIN_OBJECTS = $(BUILD_DIR)/Onegin.o $(BUILD_DIR)/utilities.o $(BUILD_DIR)/Sorting.o
-ASM_OBJECTS = $(BUILD_DIR)/assembler.o $(BUILD_DIR)/asm_utilities.o
+ASM_OBJECTS = $(BUILD_DIR)/assembler.o $(BUILD_DIR)/asm_utilities.o $(BUILD_DIR)/labels.o $(BUILD_DIR)/get_cmd_arg.o $(BUILD_DIR)/asm_dump.o
 
 OBJECTS = $(BUILD_DIR)/main.o $(ONEGIN_OBJECTS) $(ASM_OBJECTS)
 

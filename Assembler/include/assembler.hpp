@@ -40,23 +40,6 @@ struct Assembler {
 
 AsmStatusCode StorageAssembler(Storage* storage, Assembler* assembler);
 AsmStatusCode AssemblerCtor(Storage* storage, Assembler* assembler);
-
-AsmStatusCode LabelCheck(Assembler* assembler, char* string);
-AsmStatusCode GetCommand(const char* operation, Commands* opCode);
-AsmStatusCode GetArgs(String* string, Assembler* assembler, int cmd_len);
-AsmStatusCode GetNumber(String* string, Assembler* assembler, int cmd_len);
-AsmStatusCode GetRegister(String* string, Assembler* assembler, int cmd_len);
-AsmStatusCode GetLabel(String* string, Assembler* assembler, int cmd_len);
-AsmStatusCode MemoryUseCheck(String* string, Assembler* assembler, int cmd_len);
-
-AsmStatusCode AsmLabels(Assembler* assembler);
-AsmStatusCode LabelStatus(Assembler* assembler, char* label);
-int FindLabelInTable(Assembler* assembler, char* label);
-AsmStatusCode IncreaseLabels(LabelsTable* labels_table);
-
-AsmStatusCode AsmDump(Assembler* assembler, const char* string);
-
-AsmStatusCode ListingHeader(Assembler* assembler);
 AsmStatusCode CodePrinter(Assembler* assembler, const char* file_out);
 
 #endif // ASSEMBLER_INCLUDE
