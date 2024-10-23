@@ -46,11 +46,10 @@ SPUStatusCode CodeHeaderChecker(SPU* proc, FILE* file) {
 
 SPUStatusCode SPURun(SPU* proc) {
 
-	INIT_STACK(stk);
-	INIT_STACK(ret_addr_stk);
+	SPUStatusCode spu_status = SPU_NO_ERROR;
 
-	STACK_CTOR(&stk, 1);
-	STACK_CTOR(&ret_addr_stk, 1);
+	STACK_CTOR(&proc->stk, 1);
+	STACK_CTOR(&proc->ret_addr_stk, 1);
 
 	for (size_t pc = 0; pc < proc->size; pc++) {
 
@@ -60,33 +59,75 @@ SPUStatusCode SPURun(SPU* proc) {
 
 		switch (*(proc->code + pc) & MASK_FOR_COMMANDS) {
 			case CMD_PUSH: {
+				if (*(proc->code + pc) & BIT_FOR_MEMORY) {
+					if (*(proc->code + pc) & BIT_FOR_NUMBER) {
+						if (*(proc->code + (pc) + 1) >= (int)RAM_SIZE || *(proc->code + (pc) + 1) < 0)
+							SPU_ERROR_DEMO(SPU_RAM_SEGMENTATION_FAULT);
+						STACK_PUSH(&proc->stk, proc->ram[*(proc->code + (pc++) + 1)]);
+						break;
+					}
+
+					if (*(proc->code + pc) & BIT_FOR_REGISTER) {
+						if (proc->registers[*(proc->code + (pc) + 1)] >= (int)RAM_SIZE || proc->registers[*(proc->code + (pc) + 1)] < 0)
+							SPU_ERROR_DEMO(SPU_RAM_SEGMENTATION_FAULT);
+						STACK_PUSH(&proc->stk, proc->ram[proc->registers[*(proc->code + (pc++) + 1)]]);
+						break;
+					}
+				}
+
 				if (*(proc->code + pc) & BIT_FOR_NUMBER) {
-					STACK_PUSH(&stk, *(proc->code + (pc++) + 1));
+					STACK_PUSH(&proc->stk, *(proc->code + (pc++) + 1));
 					break;
 				}
 
 				if (*(proc->code + pc) & BIT_FOR_REGISTER) {
-					STACK_PUSH(&stk, proc->registers[*(proc->code + (pc++) + 1)]);
+					STACK_PUSH(&proc->stk, proc->registers[*(proc->code + (pc++) + 1)]);
 					break;
 				}
+
+				SPU_ERROR_DEMO(SPU_COMMAND_ERROR);
 			}
 			case CMD_POP: {
+				if (*(proc->code + pc) & BIT_FOR_MEMORY) {
+
+					Stack_elem_t x = 0;
+					STACK_POP(&proc->stk, &x);
+
+					if (*(proc->code + pc) & BIT_FOR_REGISTER) {
+						if (proc->registers[*(proc->code + (pc) + 1)] >= (int)RAM_SIZE || proc->registers[*(proc->code + (pc) + 1)] < 0)
+							SPU_ERROR_DEMO(SPU_RAM_SEGMENTATION_FAULT);
+
+						proc->ram[proc->registers[*(proc->code + (pc++) + 1)]] = (int)x;
+						break;
+					}
+
+					if (*(proc->code + pc) & BIT_FOR_NUMBER) {
+						if (*(proc->code + (pc) + 1) >= (int)RAM_SIZE || *(proc->code + (pc) + 1) < 0)
+							SPU_ERROR_DEMO(SPU_RAM_SEGMENTATION_FAULT);
+
+						proc->ram[*(proc->code + (pc++) + 1)] = (int)x;
+						break;
+					}
+				}
+
 				if (*(proc->code + pc) & BIT_FOR_REGISTER) {
 					Stack_elem_t x = 0;
-					STACK_POP(&stk, &x);
+					STACK_POP(&proc->stk, &x);
 
 					proc->registers[*(proc->code + (pc++) + 1)] = (int)x;
 					break;
 				}
+
+				SPU_ERROR_DEMO(SPU_COMMAND_ERROR);
 			}
 			case CMD_ADD: {
 				Stack_elem_t x1 = 0;
 				Stack_elem_t x2 = 0;
 
-				STACK_POP(&stk, &x1);
-				STACK_POP(&stk, &x2);
+				STACK_POP(&proc->stk, &x1);
+				STACK_POP(&proc->stk, &x2);
 
-				STACK_PUSH(&stk, x1 + x2);
+				STACK_PUSH(&proc->stk, x1 + x2);
 
 				break;
 			}
@@ -94,10 +135,10 @@ SPUStatusCode SPURun(SPU* proc) {
 				Stack_elem_t x1 = 0;
 				Stack_elem_t x2 = 0;
 
-				STACK_POP(&stk, &x1);
-				STACK_POP(&stk, &x2);
+				STACK_POP(&proc->stk, &x1);
+				STACK_POP(&proc->stk, &x2);
 
-				STACK_PUSH(&stk, x2 - x1);
+				STACK_PUSH(&proc->stk, x2 - x1);
 
 				break;
 			}
@@ -105,10 +146,10 @@ SPUStatusCode SPURun(SPU* proc) {
 				Stack_elem_t x1 = 0;
 				Stack_elem_t x2 = 0;
 
-				STACK_POP(&stk, &x1);
-				STACK_POP(&stk, &x2);
+				STACK_POP(&proc->stk, &x1);
+				STACK_POP(&proc->stk, &x2);
 
-				STACK_PUSH(&stk, x2 / x1);
+				STACK_PUSH(&proc->stk, x2 / x1);
 
 				break;
 			}
@@ -116,10 +157,10 @@ SPUStatusCode SPURun(SPU* proc) {
 				Stack_elem_t x1 = 0;
 				Stack_elem_t x2 = 0;
 
-				STACK_POP(&stk, &x1);
-				STACK_POP(&stk, &x2);
+				STACK_POP(&proc->stk, &x1);
+				STACK_POP(&proc->stk, &x2);
 
-				STACK_PUSH(&stk, x2 * x1);
+				STACK_PUSH(&proc->stk, x2 * x1);
 
 				break;
 			}
@@ -129,47 +170,47 @@ SPUStatusCode SPURun(SPU* proc) {
 				printf(YELLOW("Enter your number:")" ");
 				scanf("%lg", &x);
 
-				STACK_PUSH(&stk, x);
+				STACK_PUSH(&proc->stk, x);
 
 				break;
 			}
 			case CMD_SQRT: {
 				Stack_elem_t x = 0;
 
-				STACK_POP(&stk, &x);
+				STACK_POP(&proc->stk, &x);
 
 				x = sqrt(x);
 
-				STACK_PUSH(&stk, x);
+				STACK_PUSH(&proc->stk, x);
 
 				break;
 			}
 			case CMD_SIN: {
 				Stack_elem_t x = 0;
 
-				STACK_POP(&stk, &x);
+				STACK_POP(&proc->stk, &x);
 
 				x = sin(x);
 
-				STACK_PUSH(&stk, x);
+				STACK_PUSH(&proc->stk, x);
 
 				break;
 			}
 			case CMD_COS: {
 				Stack_elem_t x = 0;
 
-				STACK_POP(&stk, &x);
+				STACK_POP(&proc->stk, &x);
 
 				x = cos(x);
 
-				STACK_PUSH(&stk, x);
+				STACK_PUSH(&proc->stk, x);
 
 				break;
 			}
 			case CMD_OUT: {
 				Stack_elem_t result = 0;
 
-				STACK_POP(&stk, &result);
+				STACK_POP(&proc->stk, &result);
 
 				printf(GREEN("result = %lg")"\n", result);
 
@@ -180,8 +221,8 @@ SPUStatusCode SPURun(SPU* proc) {
 					Stack_elem_t x1 = 0;
 					Stack_elem_t x2 = 0;
 
-					STACK_POP(&stk, &x1);
-					STACK_POP(&stk, &x2);
+					STACK_POP(&proc->stk, &x1);
+					STACK_POP(&proc->stk, &x2);
 
 					if (x2 < x1)
 						pc = (size_t)*(proc->code + pc + 1) - 1;
@@ -198,7 +239,7 @@ SPUStatusCode SPURun(SPU* proc) {
 			}
 			case CMD_CALL: {
 				if (*(proc->code + pc) & BIT_FOR_NUMBER) {
-					STACK_PUSH(&ret_addr_stk, pc + 1);
+					STACK_PUSH(&proc->ret_addr_stk, pc + 1);
 
 					pc = (size_t)*(proc->code + pc++ + 1) - 1;
 				}
@@ -207,15 +248,19 @@ SPUStatusCode SPURun(SPU* proc) {
 			case CMD_RET: {
 				Stack_elem_t ret = 0;
 
-				STACK_POP(&ret_addr_stk, &ret);
+				STACK_POP(&proc->ret_addr_stk, &ret);
 
 				pc = (size_t)ret;
 
 				break;
 			}
 			case CMD_HLT: {
-				DoStackDtor(&stk);
-				DoStackDtor(&ret_addr_stk);
+				DoStackDtor(&proc->stk);
+				DoStackDtor(&proc->ret_addr_stk);
+
+				spu_status = LogDump(proc);
+				SPU_ERROR_DEMO(spu_status);
+
 				return SPU_NO_ERROR;
 			}
 			default:
@@ -258,6 +303,49 @@ SPUStatusCode SPUDump(SPU* proc, size_t pc) {
 	printf("\n");
 
 	getchar();
+
+	return SPU_NO_ERROR;
+}
+
+SPUStatusCode LogDump(SPU* proc) {
+
+	FILE* log = fopen("log.log", "w");
+	if (!log)
+		SPU_ERROR_DEMO(SPU_FILE_OPEN_ERROR);
+
+	for (size_t i = 0; i < 4 * proc->size; i++)
+		fprintf(log, "-");
+	fprintf(log, "\n");
+
+	for (size_t i = 0; i < proc->size; i++)
+		fprintf(log, "%.3zu ", i);
+	fprintf(log, "\n");
+
+	for (size_t i = 0; i < proc->size; i++)
+		fprintf(log, "%.3d ", *(proc->code + i));
+	fprintf(log, "\n");
+
+	fprintf(log, "Registers: ");
+	fprintf(log, "%cX = %d ", 'X', proc->registers[0]);
+	for (size_t i = 1; i < MAX_REG_AMOUNT; i++)
+		fprintf(log, "%cX = %d ", 'A' + (int)i - 1, proc->registers[i]);
+	fprintf(log, "\n");
+
+	fprintf(log, "RAM: \n");
+	for (size_t i = 0; i < RAM_SIZE;) {
+		for (size_t j = 0; j < DRAW_WIDTH; j++) {
+			fprintf(log, "%.3zu: %.3d | ", i, proc->ram[i]);
+			i++;
+		}
+		fprintf(log, "\n");
+	}
+
+	for (size_t i = 0; i < 4 * proc->size; i++)
+		fprintf(log, "-");
+	fprintf(log, "\n");
+
+	if (fclose(log))
+		SPU_ERROR_DEMO(SPU_FILE_CLOSE_ERROR);
 
 	return SPU_NO_ERROR;
 }

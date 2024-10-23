@@ -1,36 +1,22 @@
-in
-pop bx
-
-in
-pop ax
-
-push 1
-pop cx
-
-push [1]
-push [ax]
-
-push 0
-pop dx
-
-call power:
+call circle:
 hlt
 
-power:
-	start:
-		push bx
-		push cx
-		mul
-		pop cx
+circle:
+	loop:
+		push xx
+		push 32
+		jb next:
 
-		push dx
-		push 1
-		add
-		pop dx
+		push 10
+		pop [xx]
 
-		push dx
-		push ax
-	jb start:
-	push cx
-	out
+		next:
+			push 1
+			push xx
+			add
+			pop xx
+
+		push xx
+		push 64
+	jb loop:
 ret

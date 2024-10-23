@@ -18,6 +18,7 @@ enum Commands {
 	CMD_JMP,
 	CMD_CALL,
 	CMD_RET,
+	CMD_DRAW,
 	COUNT_OF_COMMANDS
 };
 

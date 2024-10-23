@@ -8,7 +8,7 @@ const size_t MAX_COMMAND_LENGTH 	= 6;
 
 const size_t MAX_REG_AMOUNT 		= 8;
 
-const size_t CODE_VERSION 					= 2;
+const size_t CODE_VERSION 				  = 2;
 const char 	 SIGNATURE[sizeof(long long)] = "TGF";
 
 struct McHeader {
@@ -18,6 +18,7 @@ struct McHeader {
 };
 
 enum Args {
+	MASK_WITHOUT_MEMORY = 0xFF >> 1,
 	MASK_FOR_COMMANDS 	= 0x1F,
 	BIT_FOR_NUMBER 		= 1 << 5,
 	BIT_FOR_REGISTER 	= 1 << 6,

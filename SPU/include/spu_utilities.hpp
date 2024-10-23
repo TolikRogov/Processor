@@ -15,6 +15,9 @@
 	}																												\
 }
 
+const size_t RAM_SIZE 	= 64;
+const size_t DRAW_WIDTH = 8;
+
 const char* SPUErrorsMessenger(SPUStatusCode status);
 
 #endif // SPU_UTILITIES_INCLUDE

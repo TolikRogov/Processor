@@ -165,6 +165,7 @@ AsmStatusCode GetCommand(const char* operation, Commands* opCode) {
 	commands[CMD_JMP] 	= "jmp";
 	commands[CMD_CALL]	= "call";
 	commands[CMD_RET] 	= "ret";
+	commands[CMD_DRAW]  = "draw";
 
 	for (size_t i = 0; i < COUNT_OF_COMMANDS; i++) {
 		if (StrCmp(operation, commands[i]) == 0) {
@@ -201,15 +202,12 @@ AsmStatusCode GetArgs(String* string, Assembler* assembler, int cmd_len) {
 
 	FILE* lst = assembler->listing;
 
-	switch (*(assembler->code + assembler->pc) & (0xFF >> 1)) {
+	switch (*(assembler->code + assembler->pc) & MASK_WITHOUT_MEMORY) {
 
-		case CMD_PUSH: {
+		case CMD_PUSH:
+		case CMD_POP: {
 			if (!asm_status) asm_status = GetNumber(string, assembler, cmd_len);
 			if (asm_status)  asm_status = GetRegister(string, assembler, cmd_len);
-			break;
-		}
-		case CMD_POP: {
-			asm_status = GetRegister(string, assembler, cmd_len);
 			break;
 		}
 		case CMD_CALL:
@@ -269,41 +267,40 @@ AsmStatusCode GetRegister(String* string, Assembler* assembler, int cmd_len) {
 
 	FILE* lst = assembler->listing;
 
-	char reg[REGISTER_NAME_LENGTH + 5] = {};
-	char* reg_addr = reg;
-	int cur_reg_len = 0;
-	int symbols_num = 0;
-	if (*(assembler->code + assembler->pc) & BIT_FOR_MEMORY) {
-		if (string->cur_str_size > (size_t)cmd_len + 3 + REGISTER_NAME_LENGTH)
-			ASM_ERROR_DEMO(ASM_BIG_NAME_FOR_REGISTER);
-		symbols_num = sscanf(string->cur_str + cmd_len + 1, "%s%n", reg, &cur_reg_len);
-		cur_reg_len -=2;
+	char* reg_addr = NULL;
+	size_t reg_len = 0;
+	for (size_t i = (size_t)cmd_len; *(string->cur_str + i) != '\0'; i++) {
+		if (*(string->cur_str + i) == ' ') {
+			if (reg_len > 0) {
+				*(string->cur_str + i) = '\0';
+				break;
+			}
+			reg_addr = (string->cur_str + i + 1);
+		}
+		else
+			reg_len++;
 	}
-	else {
-		if (string->cur_str_size > (size_t)cmd_len + 1 + REGISTER_NAME_LENGTH)
-			ASM_ERROR_DEMO(ASM_BIG_NAME_FOR_REGISTER);
-		symbols_num = sscanf(string->cur_str + cmd_len, "%s%n", reg, &cur_reg_len);
-	}
-	if (symbols_num < 1)
-		ASM_ERROR_DEMO(ASM_COMMAND_READ_ERROR);
 
-	StringToLower(reg);
-	asm_status = FindCharInString(reg, 'x');
+	if (reg_len > REGISTER_NAME_LENGTH)
+		ASM_ERROR_DEMO(ASM_BIG_NAME_FOR_REGISTER);
+
+	StringToLower(reg_addr);
+	asm_status = FindCharInString(reg_addr, 'x');
 	ASM_ERROR_DEMO(asm_status);
 
 	size_t cmd_pc = assembler->pc;
 
 	*(assembler->code + assembler->pc++) |= BIT_FOR_REGISTER;
 
-	if ((size_t)(*++reg_addr - 'a' + 1) > MAX_REG_AMOUNT - 1 && *(reg_addr) != 'x')
+	if ((size_t)(*reg_addr - 'a' + 1) > MAX_REG_AMOUNT - 1 && *(reg_addr) != 'x')
 		ASM_ERROR_DEMO(ASM_WRONG_LETTER_IN_REG_NAME);
 
 	*(assembler->code + assembler->pc++) = (*(reg_addr) == 'x' ? 0 : *reg_addr - 'a' + 1);
 
 	if (*(assembler->code + cmd_pc) & BIT_FOR_MEMORY)
-		fprintf(lst, "[%" "7" "s\t", reg_addr);
+		fprintf(lst, "[%" "6" "s]\t", reg_addr);
 	else
-		fprintf(lst, "%" ALIGNMENT "s\t", reg);
+		fprintf(lst, "%" ALIGNMENT "s\t", reg_addr);
 	fprintf(lst, "%." ALIGNMENT "d\t", *(assembler->code + cmd_pc));
 	fprintf(lst, "%." ALIGNMENT "x\t", *(assembler->code + cmd_pc));
 	fprintf(lst, "%." ALIGNMENT "d\t", *(assembler->code + assembler->pc - 1));
