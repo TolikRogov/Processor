@@ -1,7 +1,5 @@
-in
-pop ax
-
 call circle:
+draw
 hlt
 
 circle:
@@ -62,15 +60,15 @@ circle:
 	push 58
 	pop xx
 
-	#lst_row:
-		#push 666
-		#pop [xx]
+	lst_row:
+		push 666
+		pop [xx]
 
-	call idx_up:
+		call idx_up:
 
-		#push xx
-		#push 61
-	#jb lst_row:
+		push xx
+		push 62
+	jb lst_row:
 ret
 
 

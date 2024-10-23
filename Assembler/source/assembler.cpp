@@ -445,14 +445,13 @@ AsmStatusCode LabelStatus(Assembler* assembler, char* label) {
 	if (label_index < 0) {
 		for (size_t i = 0; *(label + i) != '\0'; i++)
 			labels_table->labels[labels_table->label_size].name[i] = label[i];
-		labels_table->label_size++;
-		label_index = (int)labels_table->label_size;
+		label_index = (int)labels_table->label_size++;
 	}
 	*(assembler->code + assembler->pc++) = labels_table->labels[label_index].addr = -1;
 
 	FixUp* cur_fix_up = &labels_table->undef_labels[labels_table->fixup_size++];
 
-	cur_fix_up->label_num = labels_table->label_size;
+	cur_fix_up->label_num = (size_t)label_index + 1;
 	cur_fix_up->pc = assembler->pc;
 
 	return ASM_UNDEFINE_LABEL;
@@ -491,8 +490,8 @@ AsmStatusCode AsmDump(Assembler* assembler, const char* string) {
 
 	printf("\nLabels:\n");
 	for (size_t i = 0; i < assembler->labels_table.label_size; i++)
-		printf("label #%zu: name - %s, addr - %d\n", i + 1, assembler->labels_table.labels[i].name,
-															assembler->labels_table.labels[i].addr);
+		printf("label #%zu: name - %" ALIGNMENT "s, addr - %d\n", i + 1, assembler->labels_table.labels[i].name,
+																		 assembler->labels_table.labels[i].addr);
 	printf("\n");
 
 	printf("\nFixUp:\n");

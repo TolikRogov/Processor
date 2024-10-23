@@ -271,6 +271,18 @@ SPUStatusCode SPURun(SPU* proc) {
 				}
 				break;
 			}
+			case CMD_DRAW: {
+				for (size_t i = 0; i < RAM_SIZE;) {
+					for (size_t j = 0; j < DRAW_WIDTH; j++) {
+						if (proc->ram[i++] == 0)
+							printf(". ");
+						else
+							printf("* ");
+					}
+					printf("\n");
+				}
+				break;
+			}
 			case CMD_RET: {
 				Stack_elem_t ret = 0;
 
