@@ -1,22 +1,82 @@
+in
+pop ax
+
 call circle:
 hlt
 
 circle:
-	loop:
-		push xx
-		push 32
-		jb next:
+	push xx
+	push 2
+	add
+	pop xx
 
-		push 10
+	loop:
+		push 666
 		pop [xx]
 
-		next:
-			push 1
-			push xx
-			add
-			pop xx
+		call idx_up:
 
 		push xx
-		push 64
+		push 6
 	jb loop:
+
+	push 666
+	pop [9]
+	push 666
+	pop [14]
+
+	push 16
+	pop xx
+
+	column:
+		push 666
+		pop [xx]
+
+		push xx
+		push 7
+		add
+		pop xx
+
+		push 666
+		pop [xx]
+
+		push 1
+		push xx
+		add
+		pop xx
+
+		push bx
+		push 1
+		add
+		pop bx
+
+		push bx
+		push 4
+	jb column:
+
+	push 666
+	pop [49]
+	push 666
+	pop [54]
+
+	push 58
+	pop xx
+
+	#lst_row:
+		#push 666
+		#pop [xx]
+
+	call idx_up:
+
+		#push xx
+		#push 61
+	#jb lst_row:
+ret
+
+
+idx_up:
+	push xx
+	push 1
+	add
+	pop xx
 ret

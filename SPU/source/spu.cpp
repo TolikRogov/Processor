@@ -59,15 +59,15 @@ SPUStatusCode SPURun(SPU* proc) {
 
 		switch (*(proc->code + pc) & MASK_FOR_COMMANDS) {
 			case CMD_PUSH: {
-				if (*(proc->code + pc) & BIT_FOR_MEMORY) {
-					if (*(proc->code + pc) & BIT_FOR_NUMBER) {
+				if (*(proc->code + pc) & MASK_FOR_MEMORY) {
+					if (*(proc->code + pc) & MASK_FOR_NUMBER) {
 						if (*(proc->code + (pc) + 1) >= (int)RAM_SIZE || *(proc->code + (pc) + 1) < 0)
 							SPU_ERROR_DEMO(SPU_RAM_SEGMENTATION_FAULT);
 						STACK_PUSH(&proc->stk, proc->ram[*(proc->code + (pc++) + 1)]);
 						break;
 					}
 
-					if (*(proc->code + pc) & BIT_FOR_REGISTER) {
+					if (*(proc->code + pc) & MASK_FOR_REGISTER) {
 						if (proc->registers[*(proc->code + (pc) + 1)] >= (int)RAM_SIZE || proc->registers[*(proc->code + (pc) + 1)] < 0)
 							SPU_ERROR_DEMO(SPU_RAM_SEGMENTATION_FAULT);
 						STACK_PUSH(&proc->stk, proc->ram[proc->registers[*(proc->code + (pc++) + 1)]]);
@@ -75,12 +75,12 @@ SPUStatusCode SPURun(SPU* proc) {
 					}
 				}
 
-				if (*(proc->code + pc) & BIT_FOR_NUMBER) {
+				if (*(proc->code + pc) & MASK_FOR_NUMBER) {
 					STACK_PUSH(&proc->stk, *(proc->code + (pc++) + 1));
 					break;
 				}
 
-				if (*(proc->code + pc) & BIT_FOR_REGISTER) {
+				if (*(proc->code + pc) & MASK_FOR_REGISTER) {
 					STACK_PUSH(&proc->stk, proc->registers[*(proc->code + (pc++) + 1)]);
 					break;
 				}
@@ -88,12 +88,12 @@ SPUStatusCode SPURun(SPU* proc) {
 				SPU_ERROR_DEMO(SPU_COMMAND_ERROR);
 			}
 			case CMD_POP: {
-				if (*(proc->code + pc) & BIT_FOR_MEMORY) {
+				if (*(proc->code + pc) & MASK_FOR_MEMORY) {
 
 					Stack_elem_t x = 0;
 					STACK_POP(&proc->stk, &x);
 
-					if (*(proc->code + pc) & BIT_FOR_REGISTER) {
+					if (*(proc->code + pc) & MASK_FOR_REGISTER) {
 						if (proc->registers[*(proc->code + (pc) + 1)] >= (int)RAM_SIZE || proc->registers[*(proc->code + (pc) + 1)] < 0)
 							SPU_ERROR_DEMO(SPU_RAM_SEGMENTATION_FAULT);
 
@@ -101,7 +101,7 @@ SPUStatusCode SPURun(SPU* proc) {
 						break;
 					}
 
-					if (*(proc->code + pc) & BIT_FOR_NUMBER) {
+					if (*(proc->code + pc) & MASK_FOR_NUMBER) {
 						if (*(proc->code + (pc) + 1) >= (int)RAM_SIZE || *(proc->code + (pc) + 1) < 0)
 							SPU_ERROR_DEMO(SPU_RAM_SEGMENTATION_FAULT);
 
@@ -110,7 +110,7 @@ SPUStatusCode SPURun(SPU* proc) {
 					}
 				}
 
-				if (*(proc->code + pc) & BIT_FOR_REGISTER) {
+				if (*(proc->code + pc) & MASK_FOR_REGISTER) {
 					Stack_elem_t x = 0;
 					STACK_POP(&proc->stk, &x);
 
@@ -161,6 +161,17 @@ SPUStatusCode SPURun(SPU* proc) {
 				STACK_POP(&proc->stk, &x2);
 
 				STACK_PUSH(&proc->stk, x2 * x1);
+
+				break;
+			}
+			case CMD_MOD: {
+				Stack_elem_t x1 = 0;
+				Stack_elem_t x2 = 0;
+
+				STACK_POP(&proc->stk, &x1);
+				STACK_POP(&proc->stk, &x2);
+
+				STACK_PUSH(&proc->stk, (int)x2 % (int)x1);
 
 				break;
 			}
@@ -217,7 +228,7 @@ SPUStatusCode SPURun(SPU* proc) {
 				break;
 			}
 			case CMD_JB: {
-				if (*(proc->code + pc) & BIT_FOR_NUMBER) {
+				if (*(proc->code + pc) & MASK_FOR_NUMBER) {
 					Stack_elem_t x1 = 0;
 					Stack_elem_t x2 = 0;
 
@@ -231,14 +242,29 @@ SPUStatusCode SPURun(SPU* proc) {
 				}
 				break;
 			}
+			case CMD_JE: {
+				if (*(proc->code + pc) & MASK_FOR_NUMBER) {
+					Stack_elem_t x1 = 0;
+					Stack_elem_t x2 = 0;
+
+					STACK_POP(&proc->stk, &x1);
+					STACK_POP(&proc->stk, &x2);
+
+					if (CompareDouble(x1, x2) == 0)
+						pc = (size_t)*(proc->code + pc + 1) - 1;
+					else
+						pc++;
+				}
+				break;
+			}
 			case CMD_JMP: {
-				if (*(proc->code + pc) & BIT_FOR_NUMBER) {
+				if (*(proc->code + pc) & MASK_FOR_NUMBER) {
 					pc = (size_t)*(proc->code + pc++ + 1) - 1;
 				}
 				break;
 			}
 			case CMD_CALL: {
-				if (*(proc->code + pc) & BIT_FOR_NUMBER) {
+				if (*(proc->code + pc) & MASK_FOR_NUMBER) {
 					STACK_PUSH(&proc->ret_addr_stk, pc + 1);
 
 					pc = (size_t)*(proc->code + pc++ + 1) - 1;

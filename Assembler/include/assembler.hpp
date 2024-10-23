@@ -49,8 +49,9 @@ AsmStatusCode GetRegister(String* string, Assembler* assembler, int cmd_len);
 AsmStatusCode GetLabel(String* string, Assembler* assembler, int cmd_len);
 AsmStatusCode MemoryUseCheck(String* string, Assembler* assembler, int cmd_len);
 
+AsmStatusCode AsmLabels(Assembler* assembler);
 AsmStatusCode LabelStatus(Assembler* assembler, char* label);
-AsmStatusCode FindLabelInTable(Assembler* assembler, char* label);
+int FindLabelInTable(Assembler* assembler, char* label);
 AsmStatusCode IncreaseLabels(LabelsTable* labels_table);
 
 AsmStatusCode AsmDump(Assembler* assembler, const char* string);
