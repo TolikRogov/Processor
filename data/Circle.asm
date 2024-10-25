@@ -3,18 +3,18 @@ draw
 hlt
 
 circle:
-	push xx
+	push ax
 	push 2
 	add
-	pop xx
+	pop ax
 
 	loop:
 		push 666
-		pop [xx]
+		pop [ax]
 
 		call idx_up:
 
-		push xx
+		push ax
 		push 6
 	jb loop:
 
@@ -24,24 +24,24 @@ circle:
 	pop [14]
 
 	push 16
-	pop xx
+	pop ax
 
 	column:
 		push 666
-		pop [xx]
+		pop [ax]
 
-		push xx
+		push ax
 		push 7
 		add
-		pop xx
+		pop ax
 
 		push 666
-		pop [xx]
+		pop [ax]
 
 		push 1
-		push xx
+		push ax
 		add
-		pop xx
+		pop ax
 
 		push bx
 		push 1
@@ -58,23 +58,23 @@ circle:
 	pop [54]
 
 	push 58
-	pop xx
+	pop ax
 
 	lst_row:
 		push 666
-		pop [xx]
+		pop [ax]
 
 		call idx_up:
 
-		push xx
+		push ax
 		push 62
 	jb lst_row:
 ret
 
 
 idx_up:
-	push xx
+	push ax
 	push 1
 	add
-	pop xx
+	pop ax
 ret

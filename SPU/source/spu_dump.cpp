@@ -2,7 +2,7 @@
 
 SPUStatusCode SPUDump(SPU* proc, size_t pc) {
 
-	for (size_t i = 0; i < 3 * proc->size; i++)
+	for (size_t i = 0; i < 4 * proc->size; i++)
 		printf("-");
 	printf("\n");
 
@@ -26,7 +26,16 @@ SPUStatusCode SPUDump(SPU* proc, size_t pc) {
 		printf("%cX = %d ", 'A' + (int)i - 1, proc->registers[i]);
 	printf("\n");
 
-	for (size_t i = 0; i < 3 * proc->size; i++)
+	printf("RAM: \n");
+	for (size_t i = 0; i < RAM_SIZE;) {
+		for (size_t j = 0; j < DRAW_WIDTH; j++) {
+			printf("%.3zu: %.3d | ", i, proc->ram[i]);
+			i++;
+		}
+		printf("\n");
+	}
+
+	for (size_t i = 0; i < 4 * proc->size; i++)
 		printf("-");
 	printf("\n");
 

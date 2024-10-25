@@ -23,10 +23,9 @@ EXECUTABLE = $(BUILD_DIR)/asm
 default: clean $(EXECUTABLE)
 
 all run: default
-	@echo; find $(DATA) -type file -exec basename {} \;
-	@echo; read -p "Enter name of file that you want to assemble: " input; \
-	read -p "Enter path to output assembler file: " output; echo; \
-	./$(BUILD_DIR)/asm $(DATA)/$$input $(DATA)/$$output
+	@echo; find $(DATA) -type file -name "*.asm" -exec basename {} \;
+	@echo; read -p "Enter name of file that you want to assemble: " input; echo; \
+	./$(BUILD_DIR)/asm $(DATA)/$$input
 
 $(EXECUTABLE): $(OBJECTS)
 	@$(CC) $(LDFLAGS) $(OBJECTS) -o $@

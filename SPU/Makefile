@@ -24,7 +24,7 @@ EXECUTABLE = $(BUILD_DIR)/proc
 default: clean $(EXECUTABLE)
 
 run: default
-	@echo; find $(DATA) -type file -exec basename {} \;
+	@echo; find $(DATA) -type file -name "*.bin" -exec basename {} \;
 	@echo; read -p "Enter name of file with machine code: " input; echo; \
 	./$(BUILD_DIR)/proc $(DATA)/$$input
 

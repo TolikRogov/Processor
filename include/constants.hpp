@@ -3,10 +3,7 @@
 
 #include <stdio.h>
 
-const size_t REGISTER_NAME_LENGTH 	= 3;
-const size_t MAX_COMMAND_LENGTH 	= 6;
-
-const size_t MAX_REG_AMOUNT 		= 8;
+const size_t MAX_REG_AMOUNT = 8;
 
 const size_t CODE_VERSION 				  = 2;
 const char 	 SIGNATURE[sizeof(long long)] = "TGF";

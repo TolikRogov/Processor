@@ -2,27 +2,37 @@
 #include "labels.hpp"
 
 AsmStatusCode GetCommand(const char* operation, Commands* opCode) {
+	// TODO:
+	// массив структур
+	// struct NameCommand {
+	// 		Commands cmd;
+	// 		const char* str_cmd;
+	//}
 
+	// const NameCommand commands[] = {
+	// 		{CMD_PUSH, "PUSH"},
+	//
+	//}
 	static const char* commands[COUNT_OF_COMMANDS] = {};
-	commands[CMD_PUSH] 	= "push";
-	commands[CMD_POP] 	= "pop";
-	commands[CMD_HLT]	= "hlt";
-	commands[CMD_ADD] 	= "add";
-	commands[CMD_SUB] 	= "sub";
-	commands[CMD_MUL] 	= "mul";
-	commands[CMD_DIV] 	= "div";
-	commands[CMD_OUT] 	= "out";
-	commands[CMD_IN] 	= "in";
-	commands[CMD_SQRT] 	= "sqrt";
-	commands[CMD_SIN] 	= "sin";
-	commands[CMD_COS] 	= "cos";
-	commands[CMD_JB] 	= "jb";
-	commands[CMD_JMP] 	= "jmp";
-	commands[CMD_JE] 	= "je";
-	commands[CMD_CALL]	= "call";
-	commands[CMD_RET] 	= "ret";
-	commands[CMD_DRAW]  = "draw";
-	commands[CMD_MOD] 	= "mod";
+	commands[CMD_PUSH] 	= "PUSH";
+	commands[CMD_POP] 	= "POP";
+	commands[CMD_HLT]	= "HLT";
+	commands[CMD_ADD] 	= "ADD";
+	commands[CMD_SUB] 	= "SUB";
+	commands[CMD_MUL] 	= "MUL";
+	commands[CMD_DIV] 	= "DIV";
+	commands[CMD_OUT] 	= "OUT";
+	commands[CMD_IN] 	= "IN";
+	commands[CMD_SQRT] 	= "SQRT";
+	commands[CMD_SIN] 	= "SIN";
+	commands[CMD_COS] 	= "COS";
+	commands[CMD_JB] 	= "JB";
+	commands[CMD_JMP] 	= "JMP";
+	commands[CMD_JE] 	= "JE";
+	commands[CMD_CALL]	= "CALL";
+	commands[CMD_RET] 	= "RET";
+	commands[CMD_DRAW]  = "DRAW";
+	commands[CMD_MOD] 	= "MOD";
 
 	for (size_t i = 0; i < COUNT_OF_COMMANDS; i++) {
 		if (StrCmp(operation, commands[i]) == 0) {
@@ -71,17 +81,21 @@ AsmStatusCode GetArgs(String* string, Assembler* assembler, int cmd_len) {
 	switch (*(assembler->code + assembler->pc) & MASK_WITHOUT_MEMORY) {
 
 		case CMD_PUSH: {
-			if (!asm_status) asm_status = GetNumber(string, assembler, cmd_len);
+			if (!asm_status) asm_status = GetRegisterPlusNumber(string, assembler, cmd_len);
+			if (asm_status)  asm_status = GetNumber(string, assembler, cmd_len);
 			if (asm_status)  asm_status = GetRegister(string, assembler, cmd_len);
 			break;
 		}
 		case CMD_POP: {
 			size_t cmd = assembler->pc;
-			if (!asm_status && *(assembler->code + cmd) & MASK_FOR_MEMORY)
-				asm_status = GetNumber(string, assembler, cmd_len);
+			if (*(assembler->code + cmd) & MASK_FOR_MEMORY) {
+				if (!asm_status) asm_status = GetRegisterPlusNumber(string, assembler, cmd_len);
+				if (asm_status)  asm_status = GetNumber(string, assembler, cmd_len);
+				if (asm_status)  asm_status = GetRegister(string, assembler, cmd_len);
+				break;
+			}
 
-			if ((asm_status && *(assembler->code + cmd) & MASK_FOR_MEMORY) ||
-			   (!asm_status && !(*(assembler->code + cmd) & MASK_FOR_MEMORY)))
+			if (!(*(assembler->code + cmd) & MASK_FOR_MEMORY))
 			   	asm_status = GetRegister(string, assembler, cmd_len);
 			break;
 		}
@@ -111,6 +125,64 @@ AsmStatusCode GetArgs(String* string, Assembler* assembler, int cmd_len) {
 	return ASM_NO_ERROR;
 }
 
+AsmStatusCode GetRegisterPlusNumber(String* string, Assembler* assembler, int cmd_len) {
+
+	AsmStatusCode asm_status = ASM_NO_ERROR;
+
+	while(*(string->cur_str + cmd_len) == ' ')
+		cmd_len++;
+	for (int i = cmd_len; *(string->cur_str + i) != '\0'; i++) {
+		if (*(string->cur_str + i) == ' ') {
+			*(string->cur_str + i) = '\0';
+			break;
+		}
+	}
+
+	char argument[MAX_REG_PLUS_NUMBER_ARG] = {};
+	int symbols_num = sscanf(string->cur_str + cmd_len, "%s", argument);
+	if (symbols_num < 1)
+		return ASM_COMMAND_READ_ERROR;
+
+	asm_status = FindAndReplaceCharInString(string->cur_str + cmd_len, '+', ' ', NULL);
+	if (asm_status)
+		return ASM_NO_CHAR_IN_STRING;
+
+	if (*(assembler->code + assembler->pc) & MASK_FOR_MEMORY)
+		fprintf(assembler->listing, "[%" "6" "s]\t", argument);
+	else
+		fprintf(assembler->listing, "%" ALIGNMENT "s\t", argument);
+
+	size_t cmd_pc = assembler->pc;
+
+	if (fclose(assembler->listing))
+		ASM_ERROR_DEMO(ASM_FILE_CLOSE_ERROR);
+
+	asm_status = GetRegister(string, assembler, cmd_len);
+
+	for (int i = cmd_len, null_cnt = 0; null_cnt < 1; i++) {
+		null_cnt += (*(string->cur_str + i) == '\0' ? 1 : 0);
+		cmd_len = (int)i + 1;
+	}
+	assembler->pc-=2;
+
+	asm_status = GetNumber(string, assembler, cmd_len);
+
+	assembler->listing = fopen(assembler->files.listing_file, "a");
+	if (!assembler->listing)
+		ASM_ERROR_DEMO(ASM_FILE_OPEN_ERROR);
+
+	fprintf(assembler->listing, "%." ALIGNMENT "d\t", *(assembler->code + cmd_pc));
+	fprintf(assembler->listing, "%." ALIGNMENT "x\t", *(assembler->code + cmd_pc));
+
+	fprintf(assembler->listing, "%." ALIGNMENT "d\t", *(assembler->code + assembler->pc - 2));
+	fprintf(assembler->listing, "%." ALIGNMENT "x\t", *(assembler->code + assembler->pc - 2));
+
+	fprintf(assembler->listing, "%." ALIGNMENT "d\t", *(assembler->code + assembler->pc - 1));
+	fprintf(assembler->listing, "%." ALIGNMENT "x\t", *(assembler->code + assembler->pc - 1));
+
+	return ASM_NO_ERROR;
+}
+
 AsmStatusCode GetNumber(String* string, Assembler* assembler, int cmd_len) {
 
 	FILE* lst = assembler->listing;
@@ -132,12 +204,15 @@ AsmStatusCode GetNumber(String* string, Assembler* assembler, int cmd_len) {
 	size_t cmd_pc = assembler->pc;
 
 	*(assembler->code + assembler->pc++) |= MASK_FOR_NUMBER;
+	if (*(string->cur_str + cmd_len - 1) == '\0')
+		assembler->pc++;
 	*(assembler->code + assembler->pc++) = num;
 
 	if (*(assembler->code + cmd_pc) & MASK_FOR_MEMORY)
 		fprintf(lst, "[%" "6" "d]\t", *(assembler->code + assembler->pc - 1));
 	else
 		fprintf(lst, "%" ALIGNMENT "d\t", *(assembler->code + assembler->pc - 1));
+
 	fprintf(lst, "%." ALIGNMENT "d\t", *(assembler->code + cmd_pc));
 	fprintf(lst, "%." ALIGNMENT "x\t", *(assembler->code + cmd_pc));
 	fprintf(lst, "%." ALIGNMENT "d\t", *(assembler->code + assembler->pc - 1));
@@ -152,40 +227,42 @@ AsmStatusCode GetRegister(String* string, Assembler* assembler, int cmd_len) {
 
 	FILE* lst = assembler->listing;
 
-	char* reg_addr = NULL;
 	size_t reg_len = 0;
-	for (size_t i = (size_t)cmd_len; *(string->cur_str + i) != '\0'; i++) {
-		if (*(string->cur_str + i) == ' ') {
-			if (reg_len > 0) {
-				*(string->cur_str + i) = '\0';
-				break;
-			}
-			reg_addr = (string->cur_str + i + 1);
+
+	while(*(string->cur_str + cmd_len) == ' ')
+		cmd_len++;
+	for (int i = cmd_len; *(string->cur_str + i) != '\0'; i++) {
+		if (*(string->cur_str + i) == ' ' || *(string->cur_str + i) == '\t') {
+			*(string->cur_str + i) = '\0';
+			break;
 		}
-		else
-			reg_len++;
+		reg_len++;
 	}
+
+	char* reg_addr = string->cur_str + cmd_len;
 
 	if (reg_len > REGISTER_NAME_LENGTH)
 		ASM_ERROR_DEMO(ASM_BIG_NAME_FOR_REGISTER);
 
-	StringToLower(reg_addr);
-	asm_status = FindCharInString(reg_addr, 'x');
+	StringToUpper(reg_addr);
+
+	asm_status = FindCharInString(reg_addr, 'X');
 	ASM_ERROR_DEMO(asm_status);
 
 	size_t cmd_pc = assembler->pc;
 
 	*(assembler->code + assembler->pc++) |= MASK_FOR_REGISTER;
 
-	if ((size_t)(*reg_addr - 'a' + 1) > MAX_REG_AMOUNT - 1 && *(reg_addr) != 'x')
+	if ((size_t)(*reg_addr - 'A' + 1) > MAX_REG_AMOUNT - 1 && *(reg_addr) != 'X')
 		ASM_ERROR_DEMO(ASM_WRONG_LETTER_IN_REG_NAME);
 
-	*(assembler->code + assembler->pc++) = (*(reg_addr) == 'x' ? 0 : *reg_addr - 'a' + 1);
+	*(assembler->code + assembler->pc++) = (*(reg_addr) == 'X' ? 0 : *reg_addr - 'A' + 1);
 
 	if (*(assembler->code + cmd_pc) & MASK_FOR_MEMORY)
 		fprintf(lst, "[%" "6" "s]\t", reg_addr);
 	else
 		fprintf(lst, "%" ALIGNMENT "s\t", reg_addr);
+
 	fprintf(lst, "%." ALIGNMENT "d\t", *(assembler->code + cmd_pc));
 	fprintf(lst, "%." ALIGNMENT "x\t", *(assembler->code + cmd_pc));
 	fprintf(lst, "%." ALIGNMENT "d\t", *(assembler->code + assembler->pc - 1));
@@ -208,8 +285,6 @@ AsmStatusCode GetLabel(String* string, Assembler* assembler, int cmd_len) {
 
 	if (cur_label_len > (int)MAX_LABEL_LENGTH)
 		ASM_ERROR_DEMO(ASM_BIG_NAME_FOR_LABEL);
-
-	StringToLower(label);
 
 	asm_status = IncreaseLabels(&assembler->labels_table);
 	ASM_ERROR_DEMO(asm_status);

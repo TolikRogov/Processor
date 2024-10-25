@@ -23,21 +23,62 @@ const char* AsmErrorsMessenger(AsmStatusCode status) {
 	}
 }
 
-AsmStatusCode StringToLower(char* string) {
+AsmStatusCode StringToUpper(char* string) {
 
 	for (size_t i = 0; *(string + i) != '\0'; i++) {
-		*(string + i) = (char)tolower(*(string + i));
+		*(string + i) = (char)toupper(*(string + i));
 	}
 
 	return ASM_NO_ERROR;
 }
 
-AsmStatusCode FindCharInString(const char* reg, const char x) {
+AsmStatusCode FindCharInString(const char* str, const char x) {
 
-	for (size_t i = 0; *(reg + i) != '\0'; i++) {
-		if (*(reg + i) == x)
+	for (size_t i = 0; *(str + i) != '\0'; i++) {
+		if (*(str + i) == x)
 			return ASM_NO_ERROR;
 	}
 
 	return ASM_NO_CHAR_IN_STRING;
+}
+
+AsmStatusCode FindAndReplaceCharInString(char* str, const char x, const char rep, size_t* char_index) {
+
+	for (size_t i = 0; *(str + i) != '\0'; i++) {
+		if (*(str + i) == x) {
+			*(str + i) = rep;
+			if (char_index)
+				*char_index = i;
+			return ASM_NO_ERROR;
+		}
+	}
+
+	return ASM_NO_CHAR_IN_STRING;
+}
+
+size_t StrLen(const char* str) {
+
+	size_t length = 0;
+
+	for (size_t i = 0; *(str + i) != '\0'; i++)
+		length++;
+
+	return length;
+}
+
+AsmStatusCode ConvertFileToAnother(const char* first_file, char* second_file, const char* extension) {
+
+	size_t first_file_size = StrLen(first_file);
+
+	size_t point_index = first_file_size;
+	for (; *(first_file + point_index) != '.'; point_index--) {}
+
+	for (size_t i = 0; i <= point_index; i++)
+		*(second_file + i) = *(first_file + i);
+
+	size_t extension_size = StrLen(extension);
+	for (size_t i = 0; i < extension_size + 1; i++)
+		*(second_file + point_index + i) = *(extension + i);
+
+	return ASM_NO_ERROR;
 }

@@ -52,74 +52,24 @@ SPUStatusCode SPURun(SPU* proc) {
 	STACK_CTOR(&proc->stk, 1);
 	STACK_CTOR(&proc->ret_addr_stk, 1);
 
-	for (size_t pc = 0; pc < proc->size; pc++) {
+	for (; proc->pc < proc->size; proc->pc++) {
 
 #ifdef SPU_DUMP
-		SPUDump(proc, pc);
+		SPUDump(proc, proc->pc);
 #endif
 
-		switch (*(proc->code + pc) & MASK_FOR_COMMANDS) {
+		switch (*(proc->code + proc->pc) & MASK_FOR_COMMANDS) {
 			case CMD_PUSH: {
-				if (*(proc->code + pc) & MASK_FOR_MEMORY) {
-					if (*(proc->code + pc) & MASK_FOR_NUMBER) {
-						if (*(proc->code + (pc) + 1) >= (int)RAM_SIZE || *(proc->code + (pc) + 1) < 0)
-							SPU_ERROR_DEMO(SPU_RAM_SEGMENTATION_FAULT);
-						STACK_PUSH(&proc->stk, proc->ram[*(proc->code + (pc++) + 1)]);
-						break;
-					}
-
-					if (*(proc->code + pc) & MASK_FOR_REGISTER) {
-						if (proc->registers[*(proc->code + (pc) + 1)] >= (int)RAM_SIZE || proc->registers[*(proc->code + (pc) + 1)] < 0)
-							SPU_ERROR_DEMO(SPU_RAM_SEGMENTATION_FAULT);
-						STACK_PUSH(&proc->stk, proc->ram[proc->registers[*(proc->code + (pc++) + 1)]]);
-						break;
-					}
-				}
-
-				if (*(proc->code + pc) & MASK_FOR_NUMBER) {
-					STACK_PUSH(&proc->stk, *(proc->code + (pc++) + 1));
-					break;
-				}
-
-				if (*(proc->code + pc) & MASK_FOR_REGISTER) {
-					STACK_PUSH(&proc->stk, proc->registers[*(proc->code + (pc++) + 1)]);
-					break;
-				}
-
-				SPU_ERROR_DEMO(SPU_COMMAND_ERROR);
+				STACK_PUSH(&proc->stk, *GetArg(proc));
+				break;
 			}
 			case CMD_POP: {
-				if (*(proc->code + pc) & MASK_FOR_MEMORY) {
+				Stack_elem_t x = 0;
 
-					Stack_elem_t x = 0;
-					STACK_POP(&proc->stk, &x);
+				STACK_POP(&proc->stk, &x);
 
-					if (*(proc->code + pc) & MASK_FOR_REGISTER) {
-						if (proc->registers[*(proc->code + (pc) + 1)] >= (int)RAM_SIZE || proc->registers[*(proc->code + (pc) + 1)] < 0)
-							SPU_ERROR_DEMO(SPU_RAM_SEGMENTATION_FAULT);
-
-						proc->ram[proc->registers[*(proc->code + (pc++) + 1)]] = (int)x;
-						break;
-					}
-
-					if (*(proc->code + pc) & MASK_FOR_NUMBER) {
-						if (*(proc->code + (pc) + 1) >= (int)RAM_SIZE || *(proc->code + (pc) + 1) < 0)
-							SPU_ERROR_DEMO(SPU_RAM_SEGMENTATION_FAULT);
-
-						proc->ram[*(proc->code + (pc++) + 1)] = (int)x;
-						break;
-					}
-				}
-
-				if (*(proc->code + pc) & MASK_FOR_REGISTER) {
-					Stack_elem_t x = 0;
-					STACK_POP(&proc->stk, &x);
-
-					proc->registers[*(proc->code + (pc++) + 1)] = (int)x;
-					break;
-				}
-
-				SPU_ERROR_DEMO(SPU_COMMAND_ERROR);
+				*GetArg(proc) = (int)x;
+				break;
 			}
 			case CMD_ADD: {
 				Stack_elem_t x1 = 0;
@@ -129,7 +79,6 @@ SPUStatusCode SPURun(SPU* proc) {
 				STACK_POP(&proc->stk, &x2);
 
 				STACK_PUSH(&proc->stk, x1 + x2);
-
 				break;
 			}
 			case CMD_SUB: {
@@ -140,7 +89,6 @@ SPUStatusCode SPURun(SPU* proc) {
 				STACK_POP(&proc->stk, &x2);
 
 				STACK_PUSH(&proc->stk, x2 - x1);
-
 				break;
 			}
 			case CMD_DIV: {
@@ -151,7 +99,6 @@ SPUStatusCode SPURun(SPU* proc) {
 				STACK_POP(&proc->stk, &x2);
 
 				STACK_PUSH(&proc->stk, x2 / x1);
-
 				break;
 			}
 			case CMD_MUL: {
@@ -162,7 +109,6 @@ SPUStatusCode SPURun(SPU* proc) {
 				STACK_POP(&proc->stk, &x2);
 
 				STACK_PUSH(&proc->stk, x2 * x1);
-
 				break;
 			}
 			case CMD_MOD: {
@@ -173,7 +119,6 @@ SPUStatusCode SPURun(SPU* proc) {
 				STACK_POP(&proc->stk, &x2);
 
 				STACK_PUSH(&proc->stk, (int)x2 % (int)x1);
-
 				break;
 			}
 			case CMD_IN: {
@@ -183,7 +128,6 @@ SPUStatusCode SPURun(SPU* proc) {
 				scanf("%lg", &x);
 
 				STACK_PUSH(&proc->stk, x);
-
 				break;
 			}
 			case CMD_SQRT: {
@@ -191,10 +135,7 @@ SPUStatusCode SPURun(SPU* proc) {
 
 				STACK_POP(&proc->stk, &x);
 
-				x = sqrt(x);
-
-				STACK_PUSH(&proc->stk, x);
-
+				STACK_PUSH(&proc->stk, sqrt(x));
 				break;
 			}
 			case CMD_SIN: {
@@ -202,10 +143,7 @@ SPUStatusCode SPURun(SPU* proc) {
 
 				STACK_POP(&proc->stk, &x);
 
-				x = sin(x);
-
-				STACK_PUSH(&proc->stk, x);
-
+				STACK_PUSH(&proc->stk, sin(x));
 				break;
 			}
 			case CMD_COS: {
@@ -213,10 +151,7 @@ SPUStatusCode SPURun(SPU* proc) {
 
 				STACK_POP(&proc->stk, &x);
 
-				x = cos(x);
-
-				STACK_PUSH(&proc->stk, x);
-
+				STACK_PUSH(&proc->stk, cos(x));
 				break;
 			}
 			case CMD_OUT: {
@@ -225,51 +160,41 @@ SPUStatusCode SPURun(SPU* proc) {
 				STACK_POP(&proc->stk, &result);
 
 				printf(GREEN("result = %lg")"\n", result);
-
 				break;
 			}
 			case CMD_JB: {
-				if (*(proc->code + pc) & MASK_FOR_NUMBER) {
-					Stack_elem_t x1 = 0;
-					Stack_elem_t x2 = 0;
+				Stack_elem_t x1 = 0;
+				Stack_elem_t x2 = 0;
 
-					STACK_POP(&proc->stk, &x1);
-					STACK_POP(&proc->stk, &x2);
+				STACK_POP(&proc->stk, &x1);
+				STACK_POP(&proc->stk, &x2);
 
-					if (x2 < x1)
-						pc = (size_t)*(proc->code + pc + 1) - 1;
-					else
-						pc++;
-				}
+				if (x2 < x1)
+					proc->pc = (size_t)*GetArg(proc) - 1;
+				else
+					proc->pc++;
 				break;
 			}
 			case CMD_JE: {
-				if (*(proc->code + pc) & MASK_FOR_NUMBER) {
-					Stack_elem_t x1 = 0;
-					Stack_elem_t x2 = 0;
+				Stack_elem_t x1 = 0;
+				Stack_elem_t x2 = 0;
 
-					STACK_POP(&proc->stk, &x1);
-					STACK_POP(&proc->stk, &x2);
+				STACK_POP(&proc->stk, &x1);
+				STACK_POP(&proc->stk, &x2);
 
-					if (CompareDouble(x1, x2) == 0)
-						pc = (size_t)*(proc->code + pc + 1) - 1;
-					else
-						pc++;
-				}
+				if (CompareDouble(x1, x2))
+					proc->pc = (size_t)*GetArg(proc) - 1;
+				else
+					proc->pc++;
 				break;
 			}
 			case CMD_JMP: {
-				if (*(proc->code + pc) & MASK_FOR_NUMBER) {
-					pc = (size_t)*(proc->code + pc++ + 1) - 1;
-				}
+				proc->pc = (size_t)*GetArg(proc) - 1;
 				break;
 			}
 			case CMD_CALL: {
-				if (*(proc->code + pc) & MASK_FOR_NUMBER) {
-					STACK_PUSH(&proc->ret_addr_stk, pc + 1);
-
-					pc = (size_t)*(proc->code + pc++ + 1) - 1;
-				}
+				STACK_PUSH(&proc->ret_addr_stk, proc->pc + 1);
+				proc->pc = (size_t)*GetArg(proc) - 1;
 				break;
 			}
 			case CMD_DRAW: {
@@ -289,8 +214,7 @@ SPUStatusCode SPURun(SPU* proc) {
 
 				STACK_POP(&proc->ret_addr_stk, &ret);
 
-				pc = (size_t)ret;
-
+				proc->pc = (size_t)ret;
 				break;
 			}
 			case CMD_HLT: {
@@ -305,8 +229,24 @@ SPUStatusCode SPURun(SPU* proc) {
 			default:
 				SPU_ERROR_DEMO(SPU_COMMAND_ERROR);
 		}
-
 	}
 
 	return SPU_NO_ERROR;
+}
+
+// TODO: double* GetArg
+int* GetArg(SPU* proc) {
+	proc->registers[0] = 0;
+	int argType = proc->code[proc->pc++];
+	int* argValue = NULL;
+
+	if (argType & MASK_FOR_REGISTER) {
+		proc->registers[0] = proc->registers[proc->code[proc->pc]];
+		argValue = &proc->registers[proc->code[proc->pc++]];
+	}
+	if (argType & MASK_FOR_NUMBER) 		argValue = &(proc->registers[0] += proc->code[proc->pc++]);
+	if (argType & MASK_FOR_MEMORY)		argValue = &proc->ram[proc->registers[0]];
+
+	proc->pc--;
+	return argValue;
 }

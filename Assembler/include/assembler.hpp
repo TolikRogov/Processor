@@ -2,11 +2,15 @@
 #define ASSEMBLER_INCLUDE
 
 #include "asm_utilities.hpp"
-#include "../../Onegin/include/Onegin.hpp"
-#include "../../Onegin/include/Sorting.hpp"
 
 const size_t DEFAULT_LABELS_CAPACITY = 5;
 const size_t MAX_LABEL_LENGTH 		 = 32;
+
+struct AsmFiles {
+	const char* asm_file;
+	char bin_file[MAX_FILE_NAME_SIZE];
+	char listing_file[MAX_FILE_NAME_SIZE];
+};
 
 struct FixUp {
 	size_t pc;
@@ -36,6 +40,7 @@ struct Assembler {
 
 	LabelsTable labels_table;
 	FILE* listing;
+	AsmFiles files;
 };
 
 AsmStatusCode StorageAssembler(Storage* storage, Assembler* assembler);
