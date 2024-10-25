@@ -1,5 +1,5 @@
 Signature: TGF
-Version: 2
+Version: 3
     LINE	CMD_NAME	ARG_NAME	CMD_CODE	 CMD_HEX	ARG_CODE	 ARG_HEX	
 00000000	    CALL	 circle:	00000047	0000002f	????????	????????	
 00000001	    DRAW	--------	00000017	00000011	--------	--------	

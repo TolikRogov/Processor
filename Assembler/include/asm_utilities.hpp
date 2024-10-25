@@ -4,7 +4,8 @@
 #include <stdio.h>
 #include <ctype.h>
 
-#include "../../include/commands.hpp"
+#include "../../include/enum.hpp"
+#include "../../include/array.hpp"
 #include "../../include/errors.hpp"
 #include "../../include/constants.hpp"
 

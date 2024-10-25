@@ -1,0 +1,185 @@
+DEF_CMD_(HLT,
+{
+	DoStackDtor(&proc->stk);
+	DoStackDtor(&proc->ret_addr_stk);
+
+	spu_status = LogDump(proc);
+	SPU_ERROR_DEMO(spu_status);
+
+	return SPU_NO_ERROR;
+})
+
+DEF_CMD_(PUSH,
+{
+	STACK_PUSH(&proc->stk, *GetArg(proc));
+})
+
+DEF_CMD_(POP,
+{
+	Stack_elem_t x = 0;
+
+	STACK_POP(&proc->stk, &x);
+
+	*GetArg(proc) = (int)x;
+})
+
+DEF_CMD_(ADD,
+{
+	Stack_elem_t x1 = 0;
+	Stack_elem_t x2 = 0;
+
+	STACK_POP(&proc->stk, &x1);
+	STACK_POP(&proc->stk, &x2);
+
+	STACK_PUSH(&proc->stk, x2 + x1);
+})
+
+DEF_CMD_(SUB,
+{
+	Stack_elem_t x1 = 0;
+	Stack_elem_t x2 = 0;
+
+	STACK_POP(&proc->stk, &x1);
+	STACK_POP(&proc->stk, &x2);
+
+	STACK_PUSH(&proc->stk, x2 - x1);
+})
+
+DEF_CMD_(DIV,
+{
+	Stack_elem_t x1 = 0;
+	Stack_elem_t x2 = 0;
+
+	STACK_POP(&proc->stk, &x1);
+	STACK_POP(&proc->stk, &x2);
+
+	STACK_PUSH(&proc->stk, x2 / x1);
+})
+
+DEF_CMD_(MUL,
+{
+	Stack_elem_t x1 = 0;
+	Stack_elem_t x2 = 0;
+
+	STACK_POP(&proc->stk, &x1);
+	STACK_POP(&proc->stk, &x2);
+
+	STACK_PUSH(&proc->stk, x2 * x1);
+})
+DEF_CMD_(IN,
+{
+	Stack_elem_t x = 0;
+
+	printf(YELLOW("Enter your number:")" ");
+	scanf("%lg", &x);
+
+	STACK_PUSH(&proc->stk, x);
+})
+
+DEF_CMD_(OUT,
+{
+	Stack_elem_t result = 0;
+
+	STACK_POP(&proc->stk, &result);
+
+	printf(GREEN("result = %lg")"\n", result);
+})
+
+DEF_CMD_(SQRT,
+{
+	Stack_elem_t x = 0;
+
+	STACK_POP(&proc->stk, &x);
+
+	STACK_PUSH(&proc->stk, sqrt(x));
+})
+
+DEF_CMD_(SIN,
+{
+	Stack_elem_t x = 0;
+
+	STACK_POP(&proc->stk, &x);
+
+	STACK_PUSH(&proc->stk, sin(x));
+})
+
+DEF_CMD_(COS,
+{
+	Stack_elem_t x = 0;
+
+	STACK_POP(&proc->stk, &x);
+
+	STACK_PUSH(&proc->stk, cos(x));
+})
+
+DEF_CMD_(JB,
+{
+	Stack_elem_t x1 = 0;
+	Stack_elem_t x2 = 0;
+
+	STACK_POP(&proc->stk, &x1);
+	STACK_POP(&proc->stk, &x2);
+
+	if (x2 < x1)
+		proc->pc = (size_t)*GetArg(proc) - 1;
+	else
+		proc->pc++;
+})
+
+DEF_CMD_(JMP,
+{
+	proc->pc = (size_t)*GetArg(proc) - 1;
+})
+
+DEF_CMD_(JE,
+{
+	Stack_elem_t x1 = 0;
+	Stack_elem_t x2 = 0;
+
+	STACK_POP(&proc->stk, &x1);
+	STACK_POP(&proc->stk, &x2);
+
+	if (CompareDouble(x1, x2))
+		proc->pc = (size_t)*GetArg(proc) - 1;
+	else
+		proc->pc++;
+})
+
+DEF_CMD_(CALL,
+{
+	STACK_PUSH(&proc->ret_addr_stk, proc->pc + 1);
+	proc->pc = (size_t)*GetArg(proc) - 1;
+})
+
+DEF_CMD_(RET,
+{
+	Stack_elem_t ret = 0;
+
+	STACK_POP(&proc->ret_addr_stk, &ret);
+
+	proc->pc = (size_t)ret;
+})
+
+DEF_CMD_(DRAW,
+{
+	for (size_t i = 0; i < RAM_SIZE;) {
+		for (size_t j = 0; j < DRAW_WIDTH; j++) {
+			if (proc->ram[i++] == 0)
+				printf(". ");
+			else
+				printf("* ");
+		}
+		printf("\n");
+	}
+})
+
+DEF_CMD_(MOD,
+{
+	Stack_elem_t x1 = 0;
+	Stack_elem_t x2 = 0;
+
+	STACK_POP(&proc->stk, &x1);
+	STACK_POP(&proc->stk, &x2);
+
+	STACK_PUSH(&proc->stk, (int)x2 % (int)x1);
+})

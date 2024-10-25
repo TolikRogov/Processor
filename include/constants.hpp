@@ -5,7 +5,7 @@
 
 const size_t MAX_REG_AMOUNT = 8;
 
-const size_t CODE_VERSION 				  = 2;
+const size_t CODE_VERSION 				  = 3;
 const char 	 SIGNATURE[sizeof(long long)] = "TGF";
 
 struct McHeader {

@@ -2,41 +2,10 @@
 #include "labels.hpp"
 
 AsmStatusCode GetCommand(const char* operation, Commands* opCode) {
-	// TODO:
-	// массив структур
-	// struct NameCommand {
-	// 		Commands cmd;
-	// 		const char* str_cmd;
-	//}
-
-	// const NameCommand commands[] = {
-	// 		{CMD_PUSH, "PUSH"},
-	//
-	//}
-	static const char* commands[COUNT_OF_COMMANDS] = {};
-	commands[CMD_PUSH] 	= "PUSH";
-	commands[CMD_POP] 	= "POP";
-	commands[CMD_HLT]	= "HLT";
-	commands[CMD_ADD] 	= "ADD";
-	commands[CMD_SUB] 	= "SUB";
-	commands[CMD_MUL] 	= "MUL";
-	commands[CMD_DIV] 	= "DIV";
-	commands[CMD_OUT] 	= "OUT";
-	commands[CMD_IN] 	= "IN";
-	commands[CMD_SQRT] 	= "SQRT";
-	commands[CMD_SIN] 	= "SIN";
-	commands[CMD_COS] 	= "COS";
-	commands[CMD_JB] 	= "JB";
-	commands[CMD_JMP] 	= "JMP";
-	commands[CMD_JE] 	= "JE";
-	commands[CMD_CALL]	= "CALL";
-	commands[CMD_RET] 	= "RET";
-	commands[CMD_DRAW]  = "DRAW";
-	commands[CMD_MOD] 	= "MOD";
 
 	for (size_t i = 0; i < COUNT_OF_COMMANDS; i++) {
-		if (StrCmp(operation, commands[i]) == 0) {
-			*opCode = (Commands)i;
+		if (StrCmp(operation, array_commands[i].cmd_name) == 0) {
+			*opCode = array_commands[i].cmd_code;
 			return ASM_NO_ERROR;
 		}
 	}

@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include "../../include/errors.hpp"
-#include "../../include/commands.hpp"
+#include "../../include/enum.hpp"
 #include "../../include/constants.hpp"
 
 #define SPU_ERROR_DEMO(status) {														 							 \

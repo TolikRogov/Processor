@@ -6,6 +6,12 @@
 #include "spu_utilities.hpp"
 #include <math.h>
 
+#define DEF_CMD_(cmd, ...) 	 \
+	case CMD_ ## cmd: {		\
+		__VA_ARGS__;		\
+		break;				\
+	}
+
 struct SPU {
 	size_t size;
 	int* code;
