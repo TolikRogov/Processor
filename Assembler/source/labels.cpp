@@ -56,6 +56,7 @@ AsmStatusCode IncreaseLabels(LabelsTable* labels_table) {
 
 	if (labels_table->capacity == labels_table->label_size ||
 		labels_table->capacity == labels_table->fixup_size) {
+		printf("capacity: %zu, size: %zu\n", labels_table->capacity, labels_table->label_size);
 		labels_table->labels = (Label*)realloc(labels_table->labels,
 											  (labels_table->capacity *= 2) * sizeof(Label));
 		if (!labels_table->labels)
@@ -65,6 +66,7 @@ AsmStatusCode IncreaseLabels(LabelsTable* labels_table) {
 													 labels_table->capacity * sizeof(FixUp));
 		if (!labels_table->undef_labels)
 			ASM_ERROR_DEMO(ASM_ALLOC_ERROR);
+		printf("capacity: %zu, size: %zu\n", labels_table->capacity, labels_table->label_size);
 	}
 
 	return ASM_NO_ERROR;

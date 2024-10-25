@@ -68,7 +68,6 @@ SPUStatusCode SPURun(SPU* proc) {
 	return SPU_NO_ERROR;
 }
 
-// TODO: double* GetArg
 int* GetArg(SPU* proc) {
 	proc->registers[0] = 0;
 	int argType = proc->code[proc->pc++];

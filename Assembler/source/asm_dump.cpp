@@ -21,7 +21,7 @@ AsmStatusCode ListingHeader(Assembler* assembler) {
 
 AsmStatusCode AsmDump(Assembler* assembler, const char* string) {
 
-	for (size_t i = 0; i < 5 * assembler->pc; i++)
+	for (size_t i = 0; i < 5 * assembler->pc && i < 150; i++)
 		printf("-");
 	printf("\n");
 
@@ -40,7 +40,7 @@ AsmStatusCode AsmDump(Assembler* assembler, const char* string) {
 	printf("pc: %zu\n", assembler->pc);
 	printf("current cmd string: %s\n", string);
 
-	printf("\nLabels:\n");
+	printf("\nLabels: %zu\n", assembler->labels_table.label_size);
 	for (size_t i = 0; i < assembler->labels_table.label_size; i++)
 		printf("label #%zu: name - %" ALIGNMENT "s, addr - %d\n", i + 1, assembler->labels_table.labels[i].name,
 																		 assembler->labels_table.labels[i].addr);
@@ -52,7 +52,7 @@ AsmStatusCode AsmDump(Assembler* assembler, const char* string) {
 															 assembler->labels_table.undef_labels[i].label_num);
 	printf("\n");
 
-	for (size_t i = 0; i < 5 * assembler->pc; i++)
+	for (size_t i = 0; i < 5 * assembler->pc && i < 150; i++)
 		printf("-");
 	printf("\n");
 

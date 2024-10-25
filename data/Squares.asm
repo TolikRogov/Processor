@@ -1,3 +1,6 @@
+in
+pop bx
+
 push 0
 pop ax
 
@@ -17,6 +20,6 @@ squares:
 		pop ax
 
 		push ax
-		push 20
-	jb loop:
+		push bx
+	jbe loop:
 ret

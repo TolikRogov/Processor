@@ -3,7 +3,7 @@
 
 #include "asm_utilities.hpp"
 
-const size_t DEFAULT_LABELS_CAPACITY = 5;
+const size_t DEFAULT_LABELS_CAPACITY = 20;
 const size_t MAX_LABEL_LENGTH 		 = 32;
 
 struct AsmFiles {

@@ -2,29 +2,25 @@
 
 SPUStatusCode SPUDump(SPU* proc, size_t pc) {
 
-	for (size_t i = 0; i < 4 * proc->size; i++)
+	for (size_t i = 0; i < 100; i++)
 		printf("-");
 	printf("\n");
 
-	for (size_t i = 0; i < proc->size; i++)
-		printf("%.3zu ", i);
+	for (size_t i = 0; i < proc->size; i++) {
+		printf("%.3zu: " "%.3d ", i, *(proc->code + i));
+		if (i == pc)
+			printf(YELLOW("<"));
+		printf("\n");
+	}
 	printf("\n");
 
-	for (size_t i = 0; i < proc->size; i++)
-		printf("%.3d ", *(proc->code + i));
-	printf("\n");
-
-	for (size_t i = 0; i < pc; i++)
-		printf("    ");
-	printf(YELLOW("^")"\n");
-
-	printf("pc = %zu\n", pc);
+	printf("pc = %zu\n\n", pc);
 
 	printf("Registers: ");
 	printf("%cX = %d ", 'X', proc->registers[0]);
 	for (size_t i = 1; i < MAX_REG_AMOUNT; i++)
 		printf("%cX = %d ", 'A' + (int)i - 1, proc->registers[i]);
-	printf("\n");
+	printf("\n\n");
 
 	printf("RAM: \n");
 	for (size_t i = 0; i < RAM_SIZE;) {
@@ -35,7 +31,7 @@ SPUStatusCode SPUDump(SPU* proc, size_t pc) {
 		printf("\n");
 	}
 
-	for (size_t i = 0; i < 4 * proc->size; i++)
+	for (size_t i = 0; i < 100; i++)
 		printf("-");
 	printf("\n");
 

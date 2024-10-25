@@ -23,7 +23,22 @@ DEF_CMD_(POP,
 	*GetArg(proc) = (int)x;
 })
 
-DEF_CMD_(ADD,
+#define MATH_OP(sign) {						 \
+	Stack_elem_t x1 = 0;					\
+	Stack_elem_t x2 = 0;					\
+	STACK_POP(&proc->stk, &x1);				\
+	STACK_POP(&proc->stk, &x2);				\
+	STACK_PUSH(&proc->stk, x2 sign x1);		\
+}
+
+DEF_CMD_(ADD, MATH_OP(+))
+DEF_CMD_(SUB, MATH_OP(-))
+DEF_CMD_(DIV, MATH_OP(/))
+DEF_CMD_(MUL, MATH_OP(*))
+
+#undef MATH_OP
+
+DEF_CMD_(IDIV,
 {
 	Stack_elem_t x1 = 0;
 	Stack_elem_t x2 = 0;
@@ -31,10 +46,10 @@ DEF_CMD_(ADD,
 	STACK_POP(&proc->stk, &x1);
 	STACK_POP(&proc->stk, &x2);
 
-	STACK_PUSH(&proc->stk, x2 + x1);
+	STACK_PUSH(&proc->stk, int(x2 / x1));
 })
 
-DEF_CMD_(SUB,
+DEF_CMD_(MOD,
 {
 	Stack_elem_t x1 = 0;
 	Stack_elem_t x2 = 0;
@@ -42,30 +57,9 @@ DEF_CMD_(SUB,
 	STACK_POP(&proc->stk, &x1);
 	STACK_POP(&proc->stk, &x2);
 
-	STACK_PUSH(&proc->stk, x2 - x1);
+	STACK_PUSH(&proc->stk, (int)x2 % (int)x1);
 })
 
-DEF_CMD_(DIV,
-{
-	Stack_elem_t x1 = 0;
-	Stack_elem_t x2 = 0;
-
-	STACK_POP(&proc->stk, &x1);
-	STACK_POP(&proc->stk, &x2);
-
-	STACK_PUSH(&proc->stk, x2 / x1);
-})
-
-DEF_CMD_(MUL,
-{
-	Stack_elem_t x1 = 0;
-	Stack_elem_t x2 = 0;
-
-	STACK_POP(&proc->stk, &x1);
-	STACK_POP(&proc->stk, &x2);
-
-	STACK_PUSH(&proc->stk, x2 * x1);
-})
 DEF_CMD_(IN,
 {
 	Stack_elem_t x = 0;
@@ -85,46 +79,34 @@ DEF_CMD_(OUT,
 	printf(GREEN("result = %lg")"\n", result);
 })
 
-DEF_CMD_(SQRT,
-{
-	Stack_elem_t x = 0;
+#define MATH_FUNC(func) {					\
+	Stack_elem_t x = 0;						\
+	STACK_POP(&proc->stk, &x);				\
+	STACK_PUSH(&proc->stk, sqrt(x));		\
+}
 
-	STACK_POP(&proc->stk, &x);
+DEF_CMD_(SQRT, MATH_FUNC(sqrt(x)))
+DEF_CMD_(SIN,  MATH_FUNC(sin(x)))
+DEF_CMD_(COS,  MATH_FUNC(cos(x)))
 
-	STACK_PUSH(&proc->stk, sqrt(x));
-})
+#undef MATH_FUNC
 
-DEF_CMD_(SIN,
-{
-	Stack_elem_t x = 0;
+#define JMPS(sign) {								\
+	Stack_elem_t x1 = 0;							\
+	Stack_elem_t x2 = 0;							\
+	STACK_POP(&proc->stk, &x1);						\
+	STACK_POP(&proc->stk, &x2);						\
+	if (x2 sign x1)									\
+		proc->pc = (size_t)*GetArg(proc) - 1;		\
+	else											\
+		proc->pc++;									\
+}
 
-	STACK_POP(&proc->stk, &x);
+DEF_CMD_(JB, JMPS(<))
+DEF_CMD_(JA, JMPS(>))
+DEF_CMD_(JBE, JMPS(<=))
 
-	STACK_PUSH(&proc->stk, sin(x));
-})
-
-DEF_CMD_(COS,
-{
-	Stack_elem_t x = 0;
-
-	STACK_POP(&proc->stk, &x);
-
-	STACK_PUSH(&proc->stk, cos(x));
-})
-
-DEF_CMD_(JB,
-{
-	Stack_elem_t x1 = 0;
-	Stack_elem_t x2 = 0;
-
-	STACK_POP(&proc->stk, &x1);
-	STACK_POP(&proc->stk, &x2);
-
-	if (x2 < x1)
-		proc->pc = (size_t)*GetArg(proc) - 1;
-	else
-		proc->pc++;
-})
+#undef JMPS
 
 DEF_CMD_(JMP,
 {
@@ -140,6 +122,20 @@ DEF_CMD_(JE,
 	STACK_POP(&proc->stk, &x2);
 
 	if (CompareDouble(x1, x2))
+		proc->pc = (size_t)*GetArg(proc) - 1;
+	else
+		proc->pc++;
+})
+
+DEF_CMD_(JNE,
+{
+	Stack_elem_t x1 = 0;
+	Stack_elem_t x2 = 0;
+
+	STACK_POP(&proc->stk, &x1);
+	STACK_POP(&proc->stk, &x2);
+
+	if (CompareDouble(x1, x2) == 0)
 		proc->pc = (size_t)*GetArg(proc) - 1;
 	else
 		proc->pc++;
@@ -171,15 +167,4 @@ DEF_CMD_(DRAW,
 		}
 		printf("\n");
 	}
-})
-
-DEF_CMD_(MOD,
-{
-	Stack_elem_t x1 = 0;
-	Stack_elem_t x2 = 0;
-
-	STACK_POP(&proc->stk, &x1);
-	STACK_POP(&proc->stk, &x2);
-
-	STACK_PUSH(&proc->stk, (int)x2 % (int)x1);
 })

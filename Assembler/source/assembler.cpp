@@ -35,11 +35,6 @@ AsmStatusCode StorageAssembler(Storage* storage, Assembler* assembler) {
 
 		StringToUpper(command);
 
-#ifdef ASM_DUMP
-		asm_status = AsmDump(assembler, storage->text[i].cur_str);
-		ASM_ERROR_DEMO(asm_status);
-#endif
-
 		Commands opCode = (Commands)0;
 		asm_status = GetCommand(command, &opCode);
 		if (asm_status == ASM_SYNTAX_COMMAND_ERROR)
@@ -54,6 +49,11 @@ AsmStatusCode StorageAssembler(Storage* storage, Assembler* assembler) {
 		ASM_ERROR_DEMO(asm_status);
 
 		fprintf(assembler->listing, "\n");
+
+#ifdef ASM_DUMP
+		asm_status = AsmDump(assembler, storage->text[i].cur_str);
+		ASM_ERROR_DEMO(asm_status);
+#endif
 	}
 
 	asm_status = AsmLabels(assembler);

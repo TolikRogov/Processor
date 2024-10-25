@@ -70,7 +70,10 @@ AsmStatusCode GetArgs(String* string, Assembler* assembler, int cmd_len) {
 		}
 		case CMD_CALL:
 		case CMD_JE:
+		case CMD_JA:
+		case CMD_JNE:
 		case CMD_JB:
+		case CMD_JBE:
 		case CMD_JMP: {
 			if (!asm_status) asm_status = GetNumber(string, assembler, cmd_len);
 			if (asm_status)  asm_status = GetLabel(string, assembler, cmd_len);

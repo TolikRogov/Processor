@@ -1,80 +1,79 @@
+in
+pop ax
+
+push ax
+push 2
+idiv
+
+push ax
+push 2
+idiv
+
+mul
+pop ex
+
 call circle:
 draw
 hlt
 
 circle:
-	push ax
-	push 2
-	add
-	pop ax
-
 	loop:
-		push 666
-		pop [ax]
+	call get_x:
+	call get_y:
+	push ex
 
-		call idx_up:
+	push bx
+	push bx
+	mul
 
-		push ax
-		push 6
-	jb loop:
+	push cx
+	push cx
+	mul
 
-	push 666
-	pop [9]
-	push 666
-	pop [14]
+	add
 
-	push 16
-	pop ax
+	ja into:
+	jmp end:
 
-	column:
-		push 666
-		pop [ax]
-
-		push ax
-		push 7
-		add
-		pop ax
-
-		push 666
-		pop [ax]
-
+	into:
 		push 1
-		push ax
-		add
-		pop ax
+		pop [dx]
 
-		push bx
+	end:
 		push 1
+		push dx
 		add
-		pop bx
+		pop dx
 
-		push bx
-		push 4
-	jb column:
-
-	push 666
-	pop [49]
-	push 666
-	pop [54]
-
-	push 58
-	pop ax
-
-	lst_row:
-		push 666
-		pop [ax]
-
-		call idx_up:
-
+		push dx
 		push ax
-		push 62
-	jb lst_row:
+		push ax
+		mul
+		jb loop:
 ret
 
-
-idx_up:
+get_x:
+	push dx
 	push ax
-	push 1
-	add
-	pop ax
+	mod
+
+	push ax
+	push 2
+	idiv
+
+	sub
+	pop bx
+ret
+
+get_y:
+	push dx
+	push ax
+	idiv
+
+	push ax
+	push 2
+	idiv
+
+	sub
+	pop cx
 ret
