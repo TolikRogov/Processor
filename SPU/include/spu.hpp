@@ -14,20 +14,21 @@
 
 struct SPU {
 	size_t size;
-	int* code;
+	unsigned char* code;
 	size_t pc;
 
-	int registers[MAX_REG_AMOUNT];
+	Immediate_t registers[MAX_REG_AMOUNT];
 
 	INIT_STACK(stk);
 	INIT_STACK(ret_addr_stk);
 
-	int ram[RAM_SIZE];
+	Immediate_t ram[RAM_SIZE];
 };
 
 SPUStatusCode SPUCtor(SPU* proc, const char* file);
+SPUStatusCode SPUDtor(SPU* proc);
 SPUStatusCode CodeHeaderChecker(SPU* proc, FILE* file);
 SPUStatusCode SPURun(SPU* proc);
-int* GetArg(SPU* proc);
+double* GetArg(SPU* proc);
 
 #endif // SPU_INCLUDE

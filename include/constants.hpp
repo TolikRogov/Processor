@@ -3,6 +3,11 @@
 
 #include <stdio.h>
 
+typedef double 			Immediate_t;
+typedef double 			Label_t;
+typedef unsigned char   Register_t;
+typedef unsigned char   Command_t;
+
 const size_t MAX_REG_AMOUNT = 8;
 
 const size_t CODE_VERSION 				  = 3;
@@ -14,7 +19,7 @@ struct McHeader {
 	size_t code_size;
 };
 
-enum Args {
+enum Args: unsigned char {
 	BIT_FOR_NUMBER		= 5,
 	BIT_FOR_REGISTER	= 6,
 	BIT_FOR_MEMORY		= 7,

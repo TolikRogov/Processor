@@ -86,7 +86,7 @@ AsmStatusCode GetArgs(String* string, Assembler* assembler, int cmd_len) {
 			fprintf(lst, "%." ALIGNMENT "x\t", *(assembler->code + cmd_pc));
 			fprintf(lst, "%" ALIGNMENT "s", "--------\t");
 			fprintf(lst, "%" ALIGNMENT "s", "--------\t");
-			assembler->pc++;
+			assembler->pc += sizeof(Command_t);
 			break;
 		}
 
@@ -135,7 +135,7 @@ AsmStatusCode GetRegisterPlusNumber(String* string, Assembler* assembler, int cm
 		null_cnt += (*(string->cur_str + i) == '\0' ? 1 : 0);
 		cmd_len = (int)i + 1;
 	}
-	assembler->pc-=2;
+	assembler->pc -= (sizeof(Command_t) + sizeof(Register_t));
 
 	asm_status = GetNumber(string, assembler, cmd_len);
 
@@ -146,11 +146,11 @@ AsmStatusCode GetRegisterPlusNumber(String* string, Assembler* assembler, int cm
 	fprintf(assembler->listing, "%." ALIGNMENT "d\t", *(assembler->code + cmd_pc));
 	fprintf(assembler->listing, "%." ALIGNMENT "x\t", *(assembler->code + cmd_pc));
 
-	fprintf(assembler->listing, "%." ALIGNMENT "d\t", *(assembler->code + assembler->pc - 2));
-	fprintf(assembler->listing, "%." ALIGNMENT "x\t", *(assembler->code + assembler->pc - 2));
+	fprintf(assembler->listing, "%." ALIGNMENT "d\t", *(assembler->code + assembler->pc - sizeof(Immediate_t) - sizeof(Register_t)));
+	fprintf(assembler->listing, "%." ALIGNMENT "x\t", *(assembler->code + assembler->pc - sizeof(Immediate_t) - sizeof(Register_t)));
 
-	fprintf(assembler->listing, "%." ALIGNMENT "d\t", *(assembler->code + assembler->pc - 1));
-	fprintf(assembler->listing, "%." ALIGNMENT "x\t", *(assembler->code + assembler->pc - 1));
+	fprintf(assembler->listing, "%." ALIGNMENT "lg\t", *(Immediate_t*)(assembler->code + assembler->pc - sizeof(Immediate_t)));
+	fprintf(assembler->listing, "%." ALIGNMENT "f\t",  *(Immediate_t*)(assembler->code + assembler->pc - sizeof(Immediate_t)));
 
 	return ASM_NO_ERROR;
 }
@@ -168,27 +168,30 @@ AsmStatusCode GetNumber(String* string, Assembler* assembler, int cmd_len) {
 		}
 	}
 
-	int num = 0;
-	int symbols_num = sscanf(string->cur_str + cmd_len, "%d", &num);
+	double num = 0;
+	int symbols_num = sscanf(string->cur_str + cmd_len, "%lg", &num);
 	if (symbols_num < 1)
 		return ASM_COMMAND_READ_ERROR;
 
 	size_t cmd_pc = assembler->pc;
 
-	*(assembler->code + assembler->pc++) |= MASK_FOR_NUMBER;
+	*(assembler->code + assembler->pc) |= MASK_FOR_NUMBER;
+	assembler->pc += sizeof(Command_t);
 	if (*(string->cur_str + cmd_len - 1) == '\0')
-		assembler->pc++;
-	*(assembler->code + assembler->pc++) = num;
+		assembler->pc += sizeof(Register_t);
+	*(Immediate_t*)(assembler->code + assembler->pc) = num;
+	assembler->pc += sizeof(Immediate_t);
 
 	if (*(assembler->code + cmd_pc) & MASK_FOR_MEMORY)
-		fprintf(lst, "[%" "6" "d]\t", *(assembler->code + assembler->pc - 1));
+		fprintf(lst, "[%" "6" "lg]\t", *(Immediate_t*)(assembler->code + assembler->pc - sizeof(Immediate_t)));
 	else
-		fprintf(lst, "%" ALIGNMENT "d\t", *(assembler->code + assembler->pc - 1));
+		fprintf(lst, "%" ALIGNMENT "lg\t", *(Immediate_t*)(assembler->code + assembler->pc - sizeof(Immediate_t)));
 
 	fprintf(lst, "%." ALIGNMENT "d\t", *(assembler->code + cmd_pc));
 	fprintf(lst, "%." ALIGNMENT "x\t", *(assembler->code + cmd_pc));
-	fprintf(lst, "%." ALIGNMENT "d\t", *(assembler->code + assembler->pc - 1));
-	fprintf(lst, "%." ALIGNMENT "x\t", *(assembler->code + assembler->pc - 1));
+
+	fprintf(lst, "%" ALIGNMENT "lg\t", *(Immediate_t*)(assembler->code + assembler->pc - sizeof(Immediate_t)));
+	fprintf(lst, "%" ALIGNMENT "f\t",  *(Immediate_t*)(assembler->code + assembler->pc - sizeof(Immediate_t)));
 
 	return ASM_NO_ERROR;
 }
@@ -223,12 +226,14 @@ AsmStatusCode GetRegister(String* string, Assembler* assembler, int cmd_len) {
 
 	size_t cmd_pc = assembler->pc;
 
-	*(assembler->code + assembler->pc++) |= MASK_FOR_REGISTER;
+	*(assembler->code + assembler->pc) |= MASK_FOR_REGISTER;
+	assembler->pc += sizeof(Command_t);
 
 	if ((size_t)(*reg_addr - 'A' + 1) > MAX_REG_AMOUNT - 1 && *(reg_addr) != 'X')
 		ASM_ERROR_DEMO(ASM_WRONG_LETTER_IN_REG_NAME);
 
-	*(assembler->code + assembler->pc++) = (*(reg_addr) == 'X' ? 0 : *reg_addr - 'A' + 1);
+	*(assembler->code + assembler->pc) = (*(reg_addr) == 'X' ? 0 : (unsigned char)(*reg_addr - 'A' + 1));
+	assembler->pc += sizeof(Register_t);
 
 	if (*(assembler->code + cmd_pc) & MASK_FOR_MEMORY)
 		fprintf(lst, "[%" "6" "s]\t", reg_addr);
@@ -237,8 +242,9 @@ AsmStatusCode GetRegister(String* string, Assembler* assembler, int cmd_len) {
 
 	fprintf(lst, "%." ALIGNMENT "d\t", *(assembler->code + cmd_pc));
 	fprintf(lst, "%." ALIGNMENT "x\t", *(assembler->code + cmd_pc));
-	fprintf(lst, "%." ALIGNMENT "d\t", *(assembler->code + assembler->pc - 1));
-	fprintf(lst, "%." ALIGNMENT "x\t", *(assembler->code + assembler->pc - 1));
+
+	fprintf(lst, "%." ALIGNMENT "d\t", *(assembler->code + assembler->pc - sizeof(Register_t)));
+	fprintf(lst, "%." ALIGNMENT "x\t", *(assembler->code + assembler->pc - sizeof(Register_t)));
 
 	return ASM_NO_ERROR;
 }
@@ -263,7 +269,8 @@ AsmStatusCode GetLabel(String* string, Assembler* assembler, int cmd_len) {
 
 	size_t cmd_pc = assembler->pc;
 
-	*(assembler->code + assembler->pc++) |= MASK_FOR_NUMBER;
+	*(assembler->code + assembler->pc) |= MASK_FOR_NUMBER;
+	assembler->pc += sizeof(Command_t);
 
 	asm_status = LabelStatus(assembler, label);
 
@@ -271,9 +278,9 @@ AsmStatusCode GetLabel(String* string, Assembler* assembler, int cmd_len) {
 	fprintf(lst, "%." ALIGNMENT "d\t", *(assembler->code + cmd_pc));
 	fprintf(lst, "%." ALIGNMENT "x\t", *(assembler->code + cmd_pc));
 
-	if (*(assembler->code + assembler->pc - 1) != -1) {
-		fprintf(lst, "%." ALIGNMENT "d\t", *(assembler->code + assembler->pc - 1));
-		fprintf(lst, "%." ALIGNMENT "x\t", *(assembler->code + assembler->pc - 1));
+	if (CompareDouble(*(Immediate_t*)(assembler->code + assembler->pc - sizeof(Immediate_t)), -1) == 0) {
+		fprintf(lst, "%" ALIGNMENT "lg\t", *(Immediate_t*)(assembler->code + (assembler->pc - sizeof(Immediate_t))));
+		fprintf(lst, "%" ALIGNMENT "f\t",  *(Immediate_t*)(assembler->code + (assembler->pc - sizeof(Immediate_t))));
 	}
 	else {
 		fprintf(lst, "%" ALIGNMENT "s", "????????\t");

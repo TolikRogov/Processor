@@ -17,15 +17,15 @@ SPUStatusCode SPUDump(SPU* proc, size_t pc) {
 	printf("pc = %zu\n\n", pc);
 
 	printf("Registers: ");
-	printf("%cX = %d ", 'X', proc->registers[0]);
+	printf("%cX = %lg ", 'X', proc->registers[0]);
 	for (size_t i = 1; i < MAX_REG_AMOUNT; i++)
-		printf("%cX = %d ", 'A' + (int)i - 1, proc->registers[i]);
+		printf("%cX = %lg ", 'A' + (int)i - 1, proc->registers[i]);
 	printf("\n\n");
 
 	printf("RAM: \n");
 	for (size_t i = 0; i < RAM_SIZE;) {
 		for (size_t j = 0; j < DRAW_WIDTH; j++) {
-			printf("%.3zu: %.3d | ", i, proc->ram[i]);
+			printf("%.3zu: %.3lg | ", i, proc->ram[i]);
 			i++;
 		}
 		printf("\n");
@@ -59,15 +59,15 @@ SPUStatusCode LogDump(SPU* proc) {
 	fprintf(log, "\n");
 
 	fprintf(log, "Registers: ");
-	fprintf(log, "%cX = %d ", 'X', proc->registers[0]);
+	fprintf(log, "%cX = %lg ", 'X', proc->registers[0]);
 	for (size_t i = 1; i < MAX_REG_AMOUNT; i++)
-		fprintf(log, "%cX = %d ", 'A' + (int)i - 1, proc->registers[i]);
+		fprintf(log, "%cX = %lg ", 'A' + (int)i - 1, proc->registers[i]);
 	fprintf(log, "\n");
 
 	fprintf(log, "RAM: \n");
 	for (size_t i = 0; i < RAM_SIZE;) {
 		for (size_t j = 0; j < DRAW_WIDTH; j++) {
-			fprintf(log, "%.3zu: %.3d | ", i, proc->ram[i]);
+			fprintf(log, "%.3zu: %.3lg | ", i, proc->ram[i]);
 			i++;
 		}
 		fprintf(log, "\n");

@@ -66,6 +66,10 @@ size_t StrLen(const char* str) {
 	return length;
 }
 
+int CompareDouble(const double var1, const double var2) {
+	return (abs(var1 - var2) <= EPS);
+}
+
 AsmStatusCode ConvertFileToAnother(const char* first_file, char* second_file, const char* extension) {
 
 	size_t first_file_size = StrLen(first_file);

@@ -3,7 +3,7 @@
 
 #define DEF_CMD_(cmd, ...) CMD_ ## cmd,
 
-enum Commands {
+enum Commands: char {
 	#include "commands"
 	COUNT_OF_COMMANDS
 };

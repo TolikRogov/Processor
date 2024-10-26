@@ -3,9 +3,6 @@
 
 #include "asm_utilities.hpp"
 
-const size_t DEFAULT_LABELS_CAPACITY = 20;
-const size_t MAX_LABEL_LENGTH 		 = 32;
-
 struct AsmFiles {
 	const char* asm_file;
 	char bin_file[MAX_FILE_NAME_SIZE];
@@ -35,7 +32,7 @@ struct LabelsTable {
 struct Assembler {
 	McHeader header;
 
-	int* code;
+	unsigned char* code;
 	size_t pc;
 
 	LabelsTable labels_table;
@@ -45,6 +42,7 @@ struct Assembler {
 
 AsmStatusCode StorageAssembler(Storage* storage, Assembler* assembler);
 AsmStatusCode AssemblerCtor(Storage* storage, Assembler* assembler);
+AsmStatusCode AssemblerDtor(Assembler* assembler);
 AsmStatusCode CodePrinter(Assembler* assembler, const char* file_out);
 
 #endif // ASSEMBLER_INCLUDE

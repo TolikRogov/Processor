@@ -10,8 +10,8 @@ SUB_ONEGIN = ../Onegin
 DATA = ../data
 
 DFLAGS  = #-D SPU_DUMP
-CFLAGS  = -c $(DFLAGS) -fsanitize=address,alignment -I$(SUB_STACK)/$(INCLUDE) -I$(INCLUDE) -ggdb3 -std=c++17 -O0 -Wall -Wextra -Weffc++ -Wc++14-compat -Wmissing-declarations -Wcast-qual -Wchar-subscripts -Wconversion -Wctor-dtor-privacy -Wempty-body -Wfloat-equal -Wformat-nonliteral -Wformat-security -Wformat=2 -Winline -Wnon-virtual-dtor -Woverloaded-virtual -Wpacked -Wpointer-arith -Winit-self -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-overflow=2 -Wsuggest-override -Wswitch-default -Wswitch-enum -Wundef -Wunreachable-code -Wunused -Wvariadic-macros -Wno-missing-field-initializers -Wno-narrowing -Wno-old-style-cast -Wno-varargs -Wstack-protector -fcheck-new -fsized-deallocation -fstack-protector -fstrict-overflow -fno-omit-frame-pointer -fPIE -Werror=vla
-LDFLAGS = -fsanitize=address,alignment
+CFLAGS  = -c $(DFLAGS) -fsanitize=address -I$(SUB_STACK)/$(INCLUDE) -I$(INCLUDE) -ggdb3 -std=c++17 -O0 -Wall -Wextra -Weffc++ -Wc++14-compat -Wmissing-declarations -Wcast-qual -Wchar-subscripts -Wconversion -Wctor-dtor-privacy -Wempty-body -Wfloat-equal -Wformat-nonliteral -Wformat-security -Wformat=2 -Winline -Wnon-virtual-dtor -Woverloaded-virtual -Wpacked -Wpointer-arith -Winit-self -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-overflow=2 -Wsuggest-override -Wswitch-default -Wswitch-enum -Wundef -Wunreachable-code -Wunused -Wvariadic-macros -Wno-missing-field-initializers -Wno-narrowing -Wno-old-style-cast -Wno-varargs -Wstack-protector -fcheck-new -fsized-deallocation -fstack-protector -fstrict-overflow -fno-omit-frame-pointer -fPIE -Werror=vla
+LDFLAGS = -fsanitize=address
 
 STACK_OBJECTS = $(BUILD_DIR)/stack.o $(BUILD_DIR)/log.o $(BUILD_DIR)/stack_utilities.o
 SPU_OBJECTS = $(BUILD_DIR)/spu_utilities.o $(BUILD_DIR)/spu.o $(BUILD_DIR)/spu_dump.o

@@ -20,5 +20,11 @@ int main(int argc, char* argv[]) {
 	asm_status = CodePrinter(&assembler, assembler.files.bin_file);
 	ASM_ERROR_DEMO(asm_status);
 
+	asm_status = AssemblerDtor(&assembler);
+	ASM_ERROR_DEMO(asm_status);
+
+	onegin_status = StorageDestruct(&storage);
+	ONEGIN_ERROR_CHECK(onegin_status);
+
 	return 0;
 }

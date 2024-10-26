@@ -1,8 +1,5 @@
 DEF_CMD_(HLT,
 {
-	DoStackDtor(&proc->stk);
-	DoStackDtor(&proc->ret_addr_stk);
-
 	spu_status = LogDump(proc);
 	SPU_ERROR_DEMO(spu_status);
 
@@ -20,7 +17,7 @@ DEF_CMD_(POP,
 
 	STACK_POP(&proc->stk, &x);
 
-	*GetArg(proc) = (int)x;
+	*GetArg(proc) = x;
 })
 
 #define MATH_OP(sign) {						 \
@@ -99,7 +96,7 @@ DEF_CMD_(COS,  MATH_FUNC(cos(x)))
 	if (x2 sign x1)									\
 		proc->pc = (size_t)*GetArg(proc) - 1;		\
 	else											\
-		proc->pc++;									\
+		proc->pc += sizeof(Immediate_t);			\
 }
 
 DEF_CMD_(JB, JMPS(<))
@@ -124,7 +121,7 @@ DEF_CMD_(JE,
 	if (CompareDouble(x1, x2))
 		proc->pc = (size_t)*GetArg(proc) - 1;
 	else
-		proc->pc++;
+		proc->pc += sizeof(Immediate_t);
 })
 
 DEF_CMD_(JNE,
@@ -138,7 +135,7 @@ DEF_CMD_(JNE,
 	if (CompareDouble(x1, x2) == 0)
 		proc->pc = (size_t)*GetArg(proc) - 1;
 	else
-		proc->pc++;
+		proc->pc += sizeof(Immediate_t);
 })
 
 DEF_CMD_(CALL,
@@ -153,14 +150,14 @@ DEF_CMD_(RET,
 
 	STACK_POP(&proc->ret_addr_stk, &ret);
 
-	proc->pc = (size_t)ret;
+	proc->pc = (u_int64_t)ret + sizeof(Immediate_t) - 1;
 })
 
 DEF_CMD_(DRAW,
 {
 	for (size_t i = 0; i < RAM_SIZE;) {
 		for (size_t j = 0; j < DRAW_WIDTH; j++) {
-			if (proc->ram[i++] == 0)
+			if (CompareDouble(proc->ram[i++], 0))
 				printf(". ");
 			else
 				printf("* ");

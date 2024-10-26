@@ -15,13 +15,16 @@ AsmStatusCode AsmLabels(Assembler* assembler) {
 	fprintf(assembler->listing, "FixUps: \n");
 
 	for (size_t i = 0; i < assembler->labels_table.fixup_size; i++) {
-		*(assembler->code + assembler->labels_table.undef_labels[i].pc - 1) =
+
+		*(Immediate_t*)(assembler->code + assembler->labels_table.undef_labels[i].pc - sizeof(Immediate_t)) =
 		assembler->labels_table.labels[assembler->labels_table.undef_labels[i].label_num - 1].addr;
-		fprintf(assembler->listing, "\t%" ALIGNMENT "s" " #%zu, addr %d, fix %zu\n",
+
+		fprintf(assembler->listing, "\t%" ALIGNMENT "s" " #%zu, addr %d, fix %zu," " fixed %lg\n",
 				assembler->labels_table.labels[assembler->labels_table.undef_labels[i].label_num - 1].name,
 				assembler->labels_table.undef_labels[i].label_num,
 				assembler->labels_table.labels[assembler->labels_table.undef_labels[i].label_num - 1].addr,
-				assembler->labels_table.undef_labels[i].pc - 1);
+				assembler->labels_table.undef_labels[i].pc -= sizeof(Immediate_t),
+				*(Immediate_t*)(assembler->code + assembler->labels_table.undef_labels[i].pc));
 	}
 	fprintf(assembler->listing, "\n");
 
@@ -56,7 +59,7 @@ AsmStatusCode IncreaseLabels(LabelsTable* labels_table) {
 
 	if (labels_table->capacity == labels_table->label_size ||
 		labels_table->capacity == labels_table->fixup_size) {
-		printf("capacity: %zu, size: %zu\n", labels_table->capacity, labels_table->label_size);
+
 		labels_table->labels = (Label*)realloc(labels_table->labels,
 											  (labels_table->capacity *= 2) * sizeof(Label));
 		if (!labels_table->labels)
@@ -66,7 +69,6 @@ AsmStatusCode IncreaseLabels(LabelsTable* labels_table) {
 													 labels_table->capacity * sizeof(FixUp));
 		if (!labels_table->undef_labels)
 			ASM_ERROR_DEMO(ASM_ALLOC_ERROR);
-		printf("capacity: %zu, size: %zu\n", labels_table->capacity, labels_table->label_size);
 	}
 
 	return ASM_NO_ERROR;
@@ -78,7 +80,8 @@ AsmStatusCode LabelStatus(Assembler* assembler, char* label) {
 
 	int label_index = FindLabelInTable(assembler, label);
 	if (label_index > -1 && labels_table->labels[label_index].addr != -1) {
-		*(assembler->code + assembler->pc++) = labels_table->labels[label_index].addr;
+		*(Immediate_t*)(assembler->code + assembler->pc) = labels_table->labels[label_index].addr;
+		assembler->pc += sizeof(Immediate_t);
 		return ASM_NO_ERROR;
 	}
 
@@ -87,7 +90,8 @@ AsmStatusCode LabelStatus(Assembler* assembler, char* label) {
 			labels_table->labels[labels_table->label_size].name[i] = label[i];
 		label_index = (int)labels_table->label_size++;
 	}
-	*(assembler->code + assembler->pc++) = labels_table->labels[label_index].addr = -1;
+	*(Immediate_t*)(assembler->code + assembler->pc) = labels_table->labels[label_index].addr = -1;
+	assembler->pc += sizeof(Immediate_t);
 
 	FixUp* cur_fix_up = &labels_table->undef_labels[labels_table->fixup_size++];
 

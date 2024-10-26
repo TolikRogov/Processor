@@ -50,14 +50,22 @@ enum AsmStatusCode {
 	ASM_ALLOC_ERROR
 };
 
+const size_t DEFAULT_LABELS_CAPACITY	= 20;
+const size_t MAX_LABEL_LENGTH 		 	= 32;
+
 const size_t MAX_FILE_NAME_SIZE 		= 1024;
-const size_t MAX_CNT_OF_SLOTS_FOR_CMD 	= 3;
+
+const size_t MAX_COMMAND_LENGTH 		= 6;
+
 const size_t MAX_REG_PLUS_NUMBER_ARG	= 8;
 const size_t REGISTER_NAME_LENGTH 		= 3;
-const size_t MAX_COMMAND_LENGTH 		= 6;
+
+const double EPS = 1e-10;
+
 
 size_t StrLen(const char* str);
 const char* AsmErrorsMessenger(AsmStatusCode status);
+int CompareDouble(const double var1, const double var2);
 
 AsmStatusCode ConvertFileToAnother(const char* first_file, char* second_file, const char* extension);
 AsmStatusCode StringToUpper(char* string);

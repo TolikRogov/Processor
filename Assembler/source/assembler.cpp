@@ -45,6 +45,7 @@ AsmStatusCode StorageAssembler(Storage* storage, Assembler* assembler) {
 
 		*(assembler->code + assembler->pc) |= opCode;
 		MemoryUseCheck(&storage->text[i], assembler, cur_cmd_len);
+
 		asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
 		ASM_ERROR_DEMO(asm_status);
 
@@ -89,12 +90,32 @@ AsmStatusCode AssemblerCtor(Storage* storage, Assembler* assembler) {
 	if (!assembler->labels_table.undef_labels)
 		ASM_ERROR_DEMO(ASM_ALLOC_ERROR);
 
-	assembler->code = (int*)calloc(storage->str_cnt * MAX_CNT_OF_SLOTS_FOR_CMD, sizeof(int));
+	assembler->code = (unsigned char*)calloc(storage->str_cnt, (sizeof(Command_t) + sizeof(Register_t) + sizeof(Immediate_t)));
 	if (!assembler->code)
 		ASM_ERROR_DEMO(ASM_ALLOC_ERROR);
 
 	return ASM_NO_ERROR;
 };
+
+AsmStatusCode AssemblerDtor(Assembler* assembler) {
+
+	if (assembler->labels_table.undef_labels) {
+		free(assembler->labels_table.undef_labels);
+		assembler->labels_table.undef_labels = NULL;
+	}
+
+	if (assembler->labels_table.labels) {
+		free(assembler->labels_table.labels);
+		assembler->labels_table.labels = NULL;
+	}
+
+	if (assembler->code) {
+		free(assembler->code);
+		assembler->code = NULL;
+	}
+
+	return ASM_NO_ERROR;
+}
 
 AsmStatusCode CodePrinter(Assembler* assembler, const char* file_out) {
 
@@ -106,7 +127,7 @@ AsmStatusCode CodePrinter(Assembler* assembler, const char* file_out) {
 	if (written_check != sizeof(McHeader))
 		ASM_ERROR_DEMO(ASM_FILE_WRITE_ERROR);
 
-	written_check = fwrite(assembler->code, sizeof(int), assembler->pc, bin);
+	written_check = fwrite(assembler->code, sizeof(unsigned char), assembler->pc, bin);
 	if (written_check != assembler->pc)
 		ASM_ERROR_DEMO(ASM_FILE_WRITE_ERROR);
 
