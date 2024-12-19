@@ -88,10 +88,10 @@ DEF_CMD_(OUT,
 	printf(GREEN("result = %lg")"\n", result);
 })
 
-#define MATH_FUNC(func) {					\
+#define MATH_FUNC(func) {					 \
 	Stack_elem_t x = 0;						\
 	STACK_POP(&proc->stk, &x);				\
-	STACK_PUSH(&proc->stk, sqrt(x));		\
+	STACK_PUSH(&proc->stk, func);			\
 }
 
 DEF_CMD_(SQRT, MATH_FUNC(sqrt(x)))
