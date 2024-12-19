@@ -1,0 +1,9 @@
+#!/bin/bash
+
+cd Assembler/
+./run
+cd ../
+
+cd SPU/
+./run
+cd ../

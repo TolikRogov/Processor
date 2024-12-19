@@ -1,0 +1,13 @@
+#!/bin/bash
+
+echo
+find ../data -type file -name "*.asm" -exec basename {} \;
+echo
+read -p "Enter name of file with machine code: " input
+echo
+
+# cmake -S ./ -B build/Release -DCMAKE_BUILD_TYPE=Release
+# cmake --build build/Release && ./build/Release/ASM ../data/$input
+
+cmake -S ./ -B build/Debug -DCMAKE_BUILD_TYPE=Debug
+cmake --build build/Debug && ./build/Debug/ASM ../data/$input

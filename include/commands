@@ -11,11 +11,13 @@ DEF_CMD_(PUSH,
 	STACK_PUSH(&proc->stk, *GetArg(proc));
 })
 
+#define POP(what)  STACK_POP(&proc->stk, (what))
+
 DEF_CMD_(POP,
 {
 	Stack_elem_t x = 0;
 
-	STACK_POP(&proc->stk, &x);
+	POP(&x);
 
 	*GetArg(proc) = x;
 })
@@ -34,6 +36,16 @@ DEF_CMD_(DIV, MATH_OP(/))
 DEF_CMD_(MUL, MATH_OP(*))
 
 #undef MATH_OP
+
+DEF_CMD_(GOL,
+{
+	Stack_elem_t x = 0;
+
+	STACK_POP(&proc->stk, &x);
+
+	for (size_t i = 0; i < (size_t)x; i++)
+		printf("GOL!\n");
+})
 
 DEF_CMD_(IDIV,
 {
