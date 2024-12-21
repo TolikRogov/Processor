@@ -114,6 +114,7 @@ DEF_CMD_(COS,  MATH_FUNC(cos(x)))
 DEF_CMD_(JB, JMPS(<))
 DEF_CMD_(JA, JMPS(>))
 DEF_CMD_(JBE, JMPS(<=))
+DEF_CMD_(JAE, JMPS(>=))
 
 #undef JMPS
 

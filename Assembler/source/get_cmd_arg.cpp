@@ -71,6 +71,7 @@ AsmStatusCode GetArgs(String* string, Assembler* assembler, int cmd_len) {
 		case CMD_CALL:
 		case CMD_JE:
 		case CMD_JA:
+		case CMD_JAE:
 		case CMD_JNE:
 		case CMD_JB:
 		case CMD_JBE:
