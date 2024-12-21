@@ -51,7 +51,7 @@ enum AsmStatusCode {
 };
 
 const size_t DEFAULT_LABELS_CAPACITY	= 20;
-const size_t MAX_LABEL_LENGTH 		 	= 32;
+const size_t MAX_LABEL_LENGTH 		 	= 100;
 
 const size_t MAX_FILE_NAME_SIZE 		= 1024;
 
