@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo
-find ../data -type file -name "*.asm" -exec basename {} \;
+find ../data -type f -name "*.asm" -exec basename {} \;
 echo
 read -p "Enter name of file with machine code: " input
 echo
