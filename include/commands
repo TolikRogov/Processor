@@ -153,7 +153,7 @@ DEF_CMD_(JNE,
 
 DEF_CMD_(CALL,
 {
-	STACK_PUSH(&proc->ret_addr_stk, proc->pc + 1);
+	STACK_PUSH(&proc->ret_addr_stk, (Stack_elem_t)proc->pc + 1);
 	proc->pc = (size_t)*GetArg(proc) - 1;
 })
 

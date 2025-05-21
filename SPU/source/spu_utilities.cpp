@@ -17,5 +17,6 @@ const char* SPUErrorsMessenger(SPUStatusCode status) {
 
 		case SPU_RAM_SEGMENTATION_FAULT:	return "SPU ERROR - NO VALID OPERATION WITH RAM";
 		case SPU_SYNTAX_ERROR:				return "SPU ERROR - SYNTAX OF COMMAND NO VALID";
+		case SPU_UNDEFINED_ERROR:			return "SPU ERROR - UNDEFINED ERROR";
 	}
 }
