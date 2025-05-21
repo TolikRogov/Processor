@@ -9,7 +9,8 @@ int main(int argc, char* argv[]) {
 	AsmStatusCode asm_status = ASM_NO_ERROR;
 
 	Storage storage = {};
-	Assembler assembler = { .files.asm_file = argv[1] };
+	Assembler assembler = {};
+	assembler.files.asm_file = argv[1];
 
 	onegin_status = StorageFiller(&storage, argv[1]);
 	ONEGIN_ERROR_CHECK(onegin_status);
