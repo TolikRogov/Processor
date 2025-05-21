@@ -43,7 +43,7 @@ AsmStatusCode StorageAssembler(Storage* storage, Assembler* assembler) {
 		fprintf(assembler->listing, "%." ALIGNMENT "zu\t", i);
 		fprintf(assembler->listing, "%" ALIGNMENT "s\t", command);
 
-		*(assembler->code + assembler->pc) |= opCode;
+		*(assembler->code + assembler->pc) |= (unsigned char)opCode;
 		MemoryUseCheck(&storage->text[i], assembler, cur_cmd_len);
 
 		asm_status = GetArgs(&storage->text[i], assembler, cur_cmd_len);
